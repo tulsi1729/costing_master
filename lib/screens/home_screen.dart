@@ -1,5 +1,8 @@
+import 'package:costing_master/auth/notifiers/auth_notifier.dart';
+import 'package:costing_master/auth/screens/login.dart';
 import 'package:costing_master/constants.dart';
 import 'package:costing_master/domain/enums.dart';
+import 'package:costing_master/auth/screens/sign_in_button.dart';
 import 'package:costing_master/widgets/border_container.dart';
 import 'package:costing_master/widgets/diamonds_rate_row.dart';
 import 'package:costing_master/widgets/my_answer.dart';
@@ -7,15 +10,16 @@ import 'package:costing_master/widgets/my_divider.dart';
 import 'package:costing_master/widgets/my_text_field.dart';
 import 'package:costing_master/widgets/sagadi_input_field.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class HomeScreen extends StatefulWidget {
+class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
 
   @override
-  State<HomeScreen> createState() => _HomeScreenState();
+  ConsumerState<ConsumerStatefulWidget> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _HomeScreenState extends ConsumerState<HomeScreen> {
   Map<ChargeType, double> chargesMap = {
     ChargeType.buta: 0,
     ChargeType.pati: 0,
@@ -37,9 +41,25 @@ class _HomeScreenState extends State<HomeScreen> {
   final GlobalKey<_SingleInputRowState> _profitWidgetKey =
       GlobalKey<_SingleInputRowState>();
 
+  void logOut() {
+    ref.read(authProvider.notifier).logOut();
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const LoginScreen()),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(),
+      drawer: Drawer(
+        child: Column(
+          children: [
+            TextButton(onPressed: () => logOut(), child: const Text("Log Out")),
+          ],
+        ),
+      ),
       body: SafeArea(
         child: Container(
           margin: const EdgeInsets.only(top: 28),
@@ -249,8 +269,6 @@ class _HomeScreenState extends State<HomeScreen> {
   ];
 }
 
-///
-
 class SingleInputRow extends StatefulWidget {
   final String labelText;
   final String suffixText;
@@ -302,5 +320,3 @@ class _SingleInputRowState extends State<SingleInputRow> {
     });
   }
 }
-
-///
