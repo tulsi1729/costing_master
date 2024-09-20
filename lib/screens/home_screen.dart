@@ -1,8 +1,9 @@
+import 'dart:developer';
+
 import 'package:costing_master/auth/notifiers/auth_notifier.dart';
 import 'package:costing_master/auth/screens/login.dart';
 import 'package:costing_master/constants.dart';
 import 'package:costing_master/domain/enums.dart';
-import 'package:costing_master/auth/screens/sign_in_button.dart';
 import 'package:costing_master/widgets/border_container.dart';
 import 'package:costing_master/widgets/diamonds_rate_row.dart';
 import 'package:costing_master/widgets/my_answer.dart';
@@ -13,7 +14,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
-  const HomeScreen({super.key});
+  final String clientName;
+  const HomeScreen({super.key, required this.clientName});
 
   @override
   ConsumerState<ConsumerStatefulWidget> createState() => _HomeScreenState();
@@ -51,128 +53,120 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(),
-      drawer: Drawer(
-        child: Column(
-          children: [
-            TextButton(onPressed: () => logOut(), child: const Text("Log Out")),
-          ],
-        ),
-      ),
-      body: SafeArea(
+    return SafeArea(
         child: Container(
-          margin: const EdgeInsets.only(top: 28),
-          child: SingleChildScrollView(
-            clipBehavior: Clip.none,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8.0),
-              child: Column(
-                children: [
-                  DiamondsRateRow(
-                    elementName: "પટ્ટી",
-                    onChanged: (charges) => onChanges(
-                      ChargeType.pati,
-                      charges,
-                    ),
-                  ),
-                  const MyDivider(),
-                  DiamondsRateRow(
-                    elementName: "બુટા",
-                    onChanged: (charges) => onChanges(
-                      ChargeType.buta,
-                      charges,
-                    ),
-                  ),
-                  const MyDivider(),
-                  ..._buildSagadiInputRows(_sagadiInputData),
-                  const MyDivider(),
-                  ..._buildSingleInputRows(_singleInputChargesList),
-                  const MyDivider(),
-                  BorderContainer(
-                    color: Colors.orange,
-                    child: Row(
-                      children: [
-                        const Expanded(
-                          child: Padding(
-                            padding: EdgeInsets.all(16.0),
-                            child: Text('ટોટલ ખર્ચ'),
-                          ),
-                        ),
-                        const Text(" = "),
-                        MyAnswer(answer: totalExpense),
-                      ],
-                    ),
-                  ),
-                  const MyDivider(),
-                  SingleInputRow(
-                    labelText: 'વટાવ',
-                    suffixText: '%',
-                    key: _vatavWidgetKey,
-                    onChanged: (vatavPercentage) {
-                      setState(() {
-                        vatavAmount = totalExpense * vatavPercentage / 100;
-                      });
-                      return vatavAmount;
-                    },
-                  ),
-                  const MyDivider(),
-                  BorderContainer(
-                    color: Colors.orange,
-                    child: Row(
-                      children: [
-                        const Expanded(
-                          child: Padding(
-                            padding: EdgeInsets.all(16.0),
-                            child: Text('ટોટલ ખર્ચ + વટાવ'),
-                          ),
-                        ),
-                        const Text(" = "),
-                        MyAnswer(answer: totalExpense + vatavAmount),
-                      ],
-                    ),
-                  ),
-                  const MyDivider(),
-                  SingleInputRow(
-                    labelText: 'નફો',
-                    key: _profitWidgetKey,
-                    suffixText: '%',
-                    onChanged: (profitPercentage) {
-                      setState(() {
-                        profitAmount = (totalExpense + vatavAmount) *
-                            profitPercentage /
-                            100;
-                      });
-                      return profitAmount;
-                    },
-                  ),
-                  const MyDivider(),
-                  BorderContainer(
-                    color: Colors.green,
-                    child: Row(
-                      children: [
-                        const Expanded(
-                          child: Padding(
-                            padding: EdgeInsets.all(16.0),
-                            child: Text('ટોટલ ખર્ચ + વટાવ + નફો'),
-                          ),
-                        ),
-                        const Text(" = "),
-                        MyAnswer(
-                            answer: totalExpense + vatavAmount + profitAmount),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(
-                    height: 50,
-                  )
-                ],
+      margin: const EdgeInsets.only(top: 28),
+      child: SingleChildScrollView(
+        clipBehavior: Clip.none,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8.0),
+          child: Column(
+            children: [
+              DiamondsRateRow(
+                elementName: "પટ્ટી",
+                onChanged: (charges) => onChanges(
+                  ChargeType.pati,
+                  charges,
+                ),
               ),
-            ),
+              const MyDivider(),
+              DiamondsRateRow(
+                elementName: "બુટા",
+                onChanged: (charges) => onChanges(
+                  ChargeType.buta,
+                  charges,
+                ),
+              ),
+              const MyDivider(),
+              ..._buildSagadiInputRows(_sagadiInputData),
+              const MyDivider(),
+              ..._buildSingleInputRows(_singleInputChargesList),
+              const MyDivider(),
+              BorderContainer(
+                color: Colors.orange,
+                child: Row(
+                  children: [
+                    const Expanded(
+                      child: Padding(
+                        padding: EdgeInsets.all(16.0),
+                        child: Text('ટોટલ ખર્ચ'),
+                      ),
+                    ),
+                    const Text(" = "),
+                    MyAnswer(answer: totalExpense),
+                  ],
+                ),
+              ),
+              const MyDivider(),
+              SingleInputRow(
+                labelText: 'વટાવ',
+                suffixText: '%',
+                key: _vatavWidgetKey,
+                onChanged: (vatavPercentage) {
+                  setState(() {
+                    vatavAmount = totalExpense * vatavPercentage / 100;
+                  });
+                  return vatavAmount;
+                },
+              ),
+              const MyDivider(),
+              BorderContainer(
+                color: Colors.orange,
+                child: Row(
+                  children: [
+                    const Expanded(
+                      child: Padding(
+                        padding: EdgeInsets.all(16.0),
+                        child: Text('ટોટલ ખર્ચ + વટાવ'),
+                      ),
+                    ),
+                    const Text(" = "),
+                    MyAnswer(answer: totalExpense + vatavAmount),
+                  ],
+                ),
+              ),
+              const MyDivider(),
+              SingleInputRow(
+                labelText: 'નફો',
+                key: _profitWidgetKey,
+                suffixText: '%',
+                onChanged: (profitPercentage) {
+                  setState(() {
+                    profitAmount =
+                        (totalExpense + vatavAmount) * profitPercentage / 100;
+                  });
+                  return profitAmount;
+                },
+              ),
+              const MyDivider(),
+              BorderContainer(
+                color: Colors.green,
+                child: Row(
+                  children: [
+                    const Expanded(
+                      child: Padding(
+                        padding: EdgeInsets.all(16.0),
+                        child: Text('ટોટલ ખર્ચ + વટાવ + નફો'),
+                      ),
+                    ),
+                    const Text(" = "),
+                    MyAnswer(answer: totalExpense + vatavAmount + profitAmount),
+                  ],
+                ),
+              ),
+              ElevatedButton(
+                  onPressed: () {
+                    log("save clicked ");
+                  },
+                  child: const Text("SAVE")),
+              const SizedBox(
+                height: 50,
+              ),
+            ],
           ),
         ),
       ),
-    );
+    ),);
   }
 
   void onChanges(ChargeType chargesType, double charges) {
@@ -308,7 +302,7 @@ class _SingleInputRowState extends State<SingleInputRow> {
         MyAnswer(answer: charges),
         const SizedBox(
           height: 24,
-        )
+        ),
       ],
     );
   }

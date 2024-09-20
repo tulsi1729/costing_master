@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:costing_master/auth/notifiers/auth_notifier.dart';
 import 'package:costing_master/client/repository/client_repository.dart';
 import 'package:costing_master/model/client.dart';
@@ -22,10 +20,8 @@ class ClientNotifier extends AsyncNotifier<List<Client>> {
 
   Future<List<Client>> getClients() async {
     final loggedInUserUid = (await ref.read(authProvider.future))!.uid;
-    log("uid is $loggedInUserUid");
     final List<Client> clients =
         await _clientRepository.getUserClients(loggedInUserUid);
-    log(clients.toString(), name: "notifier");
 
     return clients;
   }
