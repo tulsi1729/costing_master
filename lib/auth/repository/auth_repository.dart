@@ -1,5 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:costing_master/constant/firebase_constant.dart';
+import 'package:costing_master/constant/firebase_constants.dart';
 import 'package:costing_master/model/user_model.dart';
 import 'package:costing_master/provider/firebase_provider.dart';
 import 'package:firebase_auth/firebase_auth.dart';

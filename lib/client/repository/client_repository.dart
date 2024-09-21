@@ -1,7 +1,5 @@
-import 'dart:developer';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:costing_master/constant/firebase_constant.dart';
+import 'package:costing_master/constant/firebase_constants.dart';
 import 'package:costing_master/model/client.dart';
 import 'package:costing_master/provider/firebase_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -40,16 +38,14 @@ class ClientRepository {
           Client.fromMap(doc.data() as Map<String, dynamic>),
         );
       }
-      log('clients repo $clients');
       return clients;
     });
 
     List<Client> clients = await clientsStream.first;
 
-    log(clients.toString(), name: "repo");
     return clients;
   }
 
   CollectionReference get _clients =>
-      _firestore.collection(FirebaseConstants.clientCollection);
+      _firestore.collection(FirebaseConstants.clientsCollection);
 }
