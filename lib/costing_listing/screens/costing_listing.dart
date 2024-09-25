@@ -1,10 +1,9 @@
-
-import 'package:costing_master/costing/screens/stepper.dart';
+import 'package:costing_master/costing/screens/costing_steeper.dart';
 import 'package:flutter/material.dart';
 
 class CostingListing extends StatelessWidget {
   final String clientName;
-   CostingListing({super.key, required this.clientName});
+  const CostingListing({super.key, required this.clientName});
 
   @override
   Widget build(BuildContext context) {
@@ -18,7 +17,9 @@ class CostingListing extends StatelessWidget {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => Stteper(clientName: clientName,),
+              builder: (context) => CostingSteeper(
+                clientName: clientName,
+              ),
             ),
           );
         },
@@ -26,5 +27,4 @@ class CostingListing extends StatelessWidget {
       ),
     );
   }
- 
 }

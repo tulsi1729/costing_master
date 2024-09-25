@@ -47,6 +47,7 @@ dependencies:
   uuid: ^4.4.2
   firebase_storage: ^12.2.0
 
+  riverpod: any
 dev_dependencies:
   flutter_test:
     sdk: flutter

@@ -1,4 +1,5 @@
 import 'dart:developer';
+import 'dart:ffi';
 
 import 'package:costing_master/auth/notifiers/auth_notifier.dart';
 import 'package:costing_master/auth/screens/login.dart';
@@ -22,9 +23,17 @@ class HomeScreen extends ConsumerStatefulWidget {
 }
 
 class _HomeScreenState extends ConsumerState<HomeScreen> {
+  List<Widget> diamondWidgets = [];
+
   Map<ChargeType, double> chargesMap = {
-    ChargeType.buta: 0,
-    ChargeType.pati: 0,
+    ChargeType.patiShadowDiamond: 0,
+    ChargeType.patiColorDiamond: 0,
+    ChargeType.patiJarkan: 0,
+    ChargeType.patiDMC: 0,
+    ChargeType.butaShadowDiamond: 0,
+    ChargeType.butaColorDiamond: 0,
+    ChargeType.butaJarkan: 0,
+    ChargeType.butaDMC: 0,
     ChargeType.sheetCharges: 0,
     ChargeType.butaSagadiCharges: 0,
     ChargeType.lessSagadiCharges: 0,
@@ -52,121 +61,195 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
   @override
+  void initState() {
+    super.initState();
+    diamondWidgets = _singleInputDiamondList.map((singleInputDiamondList) {
+      return DiamondsRateRow(
+        elementName: singleInputDiamondList['elementName'] as String,
+        diamondName: singleInputDiamondList['diamondName'] as String,
+        onChanged: (charges) => onChanges(
+          singleInputDiamondList["chargeType"] as ChargeType,
+          charges,
+        ),
+      );
+    }).toList();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return SafeArea(
-        child: Container(
-      margin: const EdgeInsets.only(top: 28),
-      child: SingleChildScrollView(
-        clipBehavior: Clip.none,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 8.0),
-          child: Column(
-            children: [
-              DiamondsRateRow(
-                elementName: "પટ્ટી",
-                onChanged: (charges) => onChanges(
-                  ChargeType.pati,
-                  charges,
-                ),
-              ),
-              const MyDivider(),
-              DiamondsRateRow(
-                elementName: "બુટા",
-                onChanged: (charges) => onChanges(
-                  ChargeType.buta,
-                  charges,
-                ),
-              ),
-              const MyDivider(),
-              ..._buildSagadiInputRows(_sagadiInputData),
-              const MyDivider(),
-              ..._buildSingleInputRows(_singleInputChargesList),
-              const MyDivider(),
-              BorderContainer(
-                color: Colors.orange,
-                child: Row(
-                  children: [
-                    const Expanded(
-                      child: Padding(
-                        padding: EdgeInsets.all(16.0),
-                        child: Text('ટોટલ ખર્ચ'),
+      child: Container(
+        margin: const EdgeInsets.only(top: 28),
+        child: SingleChildScrollView(
+          clipBehavior: Clip.none,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8.0),
+            child: Column(
+              children: [
+                // DiamondsRateRow(
+                //   elementName: "પટ્ટી",
+                //   diamondName: "Shadow Diamond",
+                //   onChanged: (charges) => onChanges(
+                //     ChargeType.patiShadowDiamond,
+                //     charges,
+                //   ),
+                // ),
+                // const MyDivider(),
+                // DiamondsRateRow(
+                //   elementName: "પટ્ટી",
+                //   diamondName: "Color Diamond",
+                //   onChanged: (charges) => onChanges(
+                //     ChargeType.patiColorDiamond,
+                //     charges,
+                //   ),
+                // ),
+                // const MyDivider(),
+                // DiamondsRateRow(
+                //   elementName: "પટ્ટી",
+                //   diamondName: "Jarkan ",
+                //   onChanged: (charges) => onChanges(
+                //     ChargeType.patiJarkan,
+                //     charges,
+                //   ),
+                // ),
+                // const MyDivider(),
+                // DiamondsRateRow(
+                //   elementName: "પટ્ટી",
+                //   diamondName: "DMC ",
+                //   onChanged: (charges) => onChanges(
+                //     ChargeType.patiDMC,
+                //     charges,
+                //   ),
+                // ),
+                // const MyDivider(),
+                // DiamondsRateRow(
+                //   elementName: "બુટા",
+                //   diamondName: "Shadow Diamond",
+                //   onChanged: (charges) => onChanges(
+                //     ChargeType.butaShadowDiamond,
+                //     charges,
+                //   ),
+                // ),
+                // const MyDivider(),
+                // DiamondsRateRow(
+                //   elementName: "બુટા",
+                //   diamondName: "Color Diamond",
+                //   onChanged: (charges) => onChanges(
+                //     ChargeType.butaColorDiamond,
+                //     charges,
+                //   ),
+                // ),
+                // const MyDivider(),
+                // DiamondsRateRow(
+                //   elementName: "બુટા",
+                //   diamondName: "Jarkan ",
+                //   onChanged: (charges) => onChanges(
+                //     ChargeType.butaJarkan,
+                //     charges,
+                //   ),
+                // ),
+                // const MyDivider(),
+                // DiamondsRateRow(
+                //   elementName: "બુટા",
+                //   diamondName: "DMC ",
+                //   onChanged: (charges) => onChanges(
+                //     ChargeType.butaDMC,
+                //     charges,
+                //   ),
+                // ),
+                const MyDivider(),
+                ..._buildDiamondInputRows(_singleInputDiamondList),
+                ..._buildSagadiInputRows(_sagadiInputData),
+                const MyDivider(),
+                ..._buildSingleInputRows(_singleInputChargesList),
+                const MyDivider(),
+                BorderContainer(
+                  color: Colors.orange,
+                  child: Row(
+                    children: [
+                      const Expanded(
+                        child: Padding(
+                          padding: EdgeInsets.all(16.0),
+                          child: Text('ટોટલ ખર્ચ'),
+                        ),
                       ),
-                    ),
-                    const Text(" = "),
-                    MyAnswer(answer: totalExpense),
-                  ],
+                      const Text(" = "),
+                      MyAnswer(answer: totalExpense),
+                    ],
+                  ),
                 ),
-              ),
-              const MyDivider(),
-              SingleInputRow(
-                labelText: 'વટાવ',
-                suffixText: '%',
-                key: _vatavWidgetKey,
-                onChanged: (vatavPercentage) {
-                  setState(() {
-                    vatavAmount = totalExpense * vatavPercentage / 100;
-                  });
-                  return vatavAmount;
-                },
-              ),
-              const MyDivider(),
-              BorderContainer(
-                color: Colors.orange,
-                child: Row(
-                  children: [
-                    const Expanded(
-                      child: Padding(
-                        padding: EdgeInsets.all(16.0),
-                        child: Text('ટોટલ ખર્ચ + વટાવ'),
-                      ),
-                    ),
-                    const Text(" = "),
-                    MyAnswer(answer: totalExpense + vatavAmount),
-                  ],
-                ),
-              ),
-              const MyDivider(),
-              SingleInputRow(
-                labelText: 'નફો',
-                key: _profitWidgetKey,
-                suffixText: '%',
-                onChanged: (profitPercentage) {
-                  setState(() {
-                    profitAmount =
-                        (totalExpense + vatavAmount) * profitPercentage / 100;
-                  });
-                  return profitAmount;
-                },
-              ),
-              const MyDivider(),
-              BorderContainer(
-                color: Colors.green,
-                child: Row(
-                  children: [
-                    const Expanded(
-                      child: Padding(
-                        padding: EdgeInsets.all(16.0),
-                        child: Text('ટોટલ ખર્ચ + વટાવ + નફો'),
-                      ),
-                    ),
-                    const Text(" = "),
-                    MyAnswer(answer: totalExpense + vatavAmount + profitAmount),
-                  ],
-                ),
-              ),
-              ElevatedButton(
-                  onPressed: () {
-                    log("save clicked ");
+                const MyDivider(),
+                SingleInputRow(
+                  labelText: 'વટાવ',
+                  suffixText: '%',
+                  key: _vatavWidgetKey,
+                  onChanged: (vatavPercentage) {
+                    setState(() {
+                      vatavAmount = totalExpense * vatavPercentage / 100;
+                    });
+                    return vatavAmount;
                   },
-                  child: const Text("SAVE")),
-              const SizedBox(
-                height: 50,
-              ),
-            ],
+                ),
+                const MyDivider(),
+                BorderContainer(
+                  color: Colors.orange,
+                  child: Row(
+                    children: [
+                      const Expanded(
+                        child: Padding(
+                          padding: EdgeInsets.all(16.0),
+                          child: Text('ટોટલ ખર્ચ + વટાવ'),
+                        ),
+                      ),
+                      const Text(" = "),
+                      MyAnswer(answer: totalExpense + vatavAmount),
+                    ],
+                  ),
+                ),
+                const MyDivider(),
+                SingleInputRow(
+                  labelText: 'નફો',
+                  key: _profitWidgetKey,
+                  suffixText: '%',
+                  onChanged: (profitPercentage) {
+                    setState(() {
+                      profitAmount =
+                          (totalExpense + vatavAmount) * profitPercentage / 100;
+                    });
+                    return profitAmount;
+                  },
+                ),
+                const MyDivider(),
+                BorderContainer(
+                  color: Colors.green,
+                  child: Row(
+                    children: [
+                      const Expanded(
+                        child: Padding(
+                          padding: EdgeInsets.all(16.0),
+                          child: Text('ટોટલ ખર્ચ + વટાવ + નફો'),
+                        ),
+                      ),
+                      const Text(" = "),
+                      MyAnswer(
+                          answer: totalExpense + vatavAmount + profitAmount),
+                    ],
+                  ),
+                ),
+                ElevatedButton(
+                    onPressed: () {
+                      log("save clicked ");
+                    },
+                    child: const Text("SAVE")),
+                const SizedBox(
+                  height: 50,
+                ),
+              ],
+            ),
           ),
         ),
       ),
-    ),);
+    );
   }
 
   void onChanges(ChargeType chargesType, double charges) {
@@ -219,6 +302,69 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     }
     return rows;
   }
+
+  List<Widget> _buildDiamondInputRows(List<Map<String, dynamic>> data) {
+    List<Widget> rows = [];
+    for (int i = 0; i < data.length; i++) {
+      rows.add(
+        DiamondsRateRow(
+          elementName: data[i]['elementName'],
+          diamondName: data[i]['diamondName'],
+          onChanged: (charges) => onChanges(
+            data[i]['chargeType'],
+            charges,
+          ),
+        ),
+      );
+      if (i < data.length - 1) {
+        rows.add(const MyDivider());
+      }
+    }
+    return rows;
+  }
+
+  final _singleInputDiamondList = [
+    {
+      "elementName": "પટ્ટી",
+      "diamondName": "Shadow Diamond",
+      "chargeType": ChargeType.patiShadowDiamond,
+    },
+    {
+      "elementName": "પટ્ટી",
+      "diamondName": "Color Diamond",
+      "chargeType": ChargeType.patiColorDiamond,
+    },
+    {
+      "elementName": "પટ્ટી",
+      "diamondName": "Jarkan",
+      "chargeType": ChargeType.patiJarkan,
+    },
+    {
+      "elementName": "પટ્ટી",
+      "diamondName": "DMC ",
+      "chargeType": ChargeType.patiDMC,
+    },
+    {
+      "elementName": "બુટા",
+      "diamondName": "Shadow Diamond",
+      "chargeType": ChargeType.butaShadowDiamond,
+    },
+    {
+      "elementName": "બુટા",
+      "diamondName": "Color Diamond",
+      "chargeType": ChargeType.butaColorDiamond,
+    },
+    {
+      "elementName": "બુટા",
+      "diamondName": "Jarkan",
+      "chargeType": ChargeType.butaJarkan,
+    },
+    {
+      "elementName": "બુટા",
+      "diamondName": "DMC ",
+      "chargeType": ChargeType.butaDMC,
+    }
+  ];
 
   final _singleInputChargesList = [
     {

@@ -9,7 +9,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gallery_saver/gallery_saver.dart';
 import 'package:image_gallery_saver/image_gallery_saver.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:firebase_storage/firebase_storage.dart' as firebase_storage;
 
 class PickImage extends ConsumerStatefulWidget {
   const PickImage({super.key});
@@ -67,7 +66,7 @@ class _PickImageState extends ConsumerState<PickImage> {
     log("url is -- $urlDownload");
   }
 
-  _showPicker() async {
+  Future showPicker() async {
     RenderRepaintBoundary boundary =
         _globalKey.currentContext!.findRenderObject() as RenderRepaintBoundary;
     ui.Image image = await boundary.toImage();
@@ -80,7 +79,7 @@ class _PickImageState extends ConsumerState<PickImage> {
     }
   }
 
-  Future<void> _saveToGallery() async {
+  Future<void> saveToGallery() async {
     if (_image != null) {
       // Save the image
       await GallerySaver.saveImage(_image!.path);
@@ -91,78 +90,9 @@ class _PickImageState extends ConsumerState<PickImage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Save image to gallery"),
+        title: const Text("Select Image"),
       ),
-      body: Center(
-        child: Column(
-          children: [
-            GestureDetector(
-              onTap: () {
-                _showPicker();
-              },
-              child: RepaintBoundary(
-                key: _globalKey,
-                child: Container(
-                  decoration: const BoxDecoration(color: Colors.white),
-                  child: const Column(
-                    children: [
-                      Text(
-                        "Hello flutter ",
-                        style: TextStyle(fontSize: 23),
-                      ),
-                      // _image != null
-                      //     ? Column(
-                      //         children: [
-                      //           Image.file(_image!, height: 200),
-                      //         ],
-                      //       )
-                      //     : const Text("No Image Found"),
-                      Icon(Icons.abc),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-            Container(
-              padding: const EdgeInsets.only(top: 15),
-              child: ElevatedButton(
-                onPressed: () {
-                  _saveToGallery();
-                },
-                child: const Text("Save"),
-              ),
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                ElevatedButton(
-                  onPressed: imageFromGallery,
-                  child: const Text('Pick Image'),
-                ),
-                ElevatedButton(
-                  onPressed: imageFromCamera,
-                  child: const Text('Capture Image'),
-                ),
-              ],
-            ),
-            Container(
-              child: Column(
-                children: <Widget>[
-                  _image != null
-                      ? Image.file(_image!, height: 300.0, width: 300.0)
-                      : const Text("No Image Selected"),
-                  TextButton(
-                    child: const Text('Upload'),
-                    onPressed: () async {
-                      uploadFile();
-                    },
-                  )
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
+      body: const Center(),
     );
   }
 }

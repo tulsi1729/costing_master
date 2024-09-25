@@ -5,10 +5,12 @@ import 'package:flutter/material.dart';
 
 class DiamondsRateRow extends StatefulWidget {
   final String elementName;
+  final String diamondName;
   final void Function(double) onChanged;
   const DiamondsRateRow({
     super.key,
     required this.elementName,
+    required this.diamondName,
     required this.onChanged,
   });
 
@@ -20,7 +22,7 @@ class _DiamondsRateRowState extends State<DiamondsRateRow> {
   static int n = 100;
   TextEditingController diamondsPerElementController = TextEditingController();
   TextEditingController elementsCountController = TextEditingController();
-  TextEditingController nDiamondsRateController = TextEditingController();
+  TextEditingController diamondsRateController = TextEditingController();
   double totalSum = 0;
 
   @override
@@ -28,7 +30,7 @@ class _DiamondsRateRowState extends State<DiamondsRateRow> {
     return Row(
       children: [
         MyTextField(
-          labelText: 'એક ${widget.elementName} માં ડાયમંડ',
+          labelText: 'એક ${widget.elementName} માં ${widget.diamondName}',
           onChanged: onChangedInput,
           controller: diamondsPerElementController,
         ),
@@ -43,7 +45,7 @@ class _DiamondsRateRowState extends State<DiamondsRateRow> {
           labelText: '$n ડાયમંડ ભાવ',
           suffixText: inrSymbol,
           onChanged: onChangedInput,
-          controller: nDiamondsRateController,
+          controller: diamondsRateController,
         ),
         const Text(" = "),
         MyAnswer(answer: totalSum),
@@ -56,7 +58,7 @@ class _DiamondsRateRowState extends State<DiamondsRateRow> {
         double.tryParse(diamondsPerElementController.text) ?? 0;
     double elementsCount = double.tryParse(elementsCountController.text) ?? 0;
     double oneDiamondsRate =
-        (double.tryParse(nDiamondsRateController.text) ?? 0) / n;
+        (double.tryParse(diamondsRateController.text) ?? 0) / n;
 
     setState(() {
       totalSum = (diamondsPerElement * elementsCount * oneDiamondsRate);

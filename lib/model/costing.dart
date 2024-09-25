@@ -1,13 +1,10 @@
-// ignore_for_file: public_member_api_docs, sort_constructors_first
-import 'dart:convert';
-
-import 'package:costing_master/constant/firebase_constants.dart';
-import 'package:costing_master/model/sagadi_costing.dart';
 import 'package:flutter/foundation.dart';
 
 import 'package:costing_master/model/diamond_costing.dart';
+import 'package:costing_master/model/sagadi_costing.dart';
 
 class Costing {
+  String GUID;
   String createdBy;
   int? designNo;
   String clientUid;
@@ -26,6 +23,7 @@ class Costing {
   List<SagadiCosting> sagadiCostings;
 
   Costing({
+    required this.GUID,
     required this.createdBy,
     this.designNo,
     required this.clientUid,
@@ -45,6 +43,7 @@ class Costing {
   });
 
   Costing copyWith({
+    String? GUID,
     String? createdBy,
     int? designNo,
     String? clientUid,
@@ -63,6 +62,7 @@ class Costing {
     List<SagadiCosting>? sagadiCostings,
   }) {
     return Costing(
+      GUID: GUID ?? this.GUID,
       createdBy: createdBy ?? this.createdBy,
       designNo: designNo ?? this.designNo,
       clientUid: clientUid ?? this.clientUid,
@@ -84,27 +84,29 @@ class Costing {
 
   Map<String, dynamic> toMap() {
     return <String, dynamic>{
-      FirebaseConstants.createdBy: createdBy,
-      FirebaseConstants.designNo: designNo,
-      FirebaseConstants.clientUid: clientUid,
-      FirebaseConstants.sariName: sariName,
-      FirebaseConstants.imageUrl: imageUrl,
-      FirebaseConstants.sheetBharvana: sheetBharvana,
-      FirebaseConstants.lessFiting: lessFiting,
-      FirebaseConstants.reniyaCutting: reniyaCutting,
-      FirebaseConstants.fusing: fusing,
-      FirebaseConstants.dieKapvana: dieKapvana,
-      FirebaseConstants.otherCost: otherCost,
-      FirebaseConstants.totalCost: totalCost,
-      FirebaseConstants.vatavPercentage: vatavPercentage,
-      FirebaseConstants.profitPercentage: profitPercentage,
-      FirebaseConstants.diamondCostings: diamondCostings.map((x) => x.toMap()).toList(),
-      FirebaseConstants.sagadiCostings: sagadiCostings.map((x) => x.toMap()).toList(),
+      'GUID': GUID,
+      'createdBy': createdBy,
+      'designNo': designNo,
+      'clientUid': clientUid,
+      'sariName': sariName,
+      'imageUrl': imageUrl,
+      'sheetBharvana': sheetBharvana,
+      'lessFiting': lessFiting,
+      'reniyaCutting': reniyaCutting,
+      'fusing': fusing,
+      'dieKapvana': dieKapvana,
+      'otherCost': otherCost,
+      'totalCost': totalCost,
+      'vatavPercentage': vatavPercentage,
+      'profitPercentage': profitPercentage,
+      'diamondCostings': diamondCostings.map((x) => x.toMap()).toList(),
+      'sagadiCostings': sagadiCostings.map((x) => x.toMap()).toList(),
     };
   }
 
   factory Costing.fromMap(Map<String, dynamic> map) {
     return Costing(
+      GUID: map['GUID'] as String,
       createdBy: map['createdBy'] as String,
       designNo: map['designNo'] != null ? map['designNo'] as int : null,
       clientUid: map['clientUid'] as String,
@@ -119,60 +121,65 @@ class Costing {
       totalCost: map['totalCost'] as double,
       vatavPercentage: map['vatavPercentage'] as double,
       profitPercentage: map['profitPercentage'] as double,
-      diamondCostings: List<DiamondCosting>.from((map['diamondCostings'] as List<int>).map<DiamondCosting>((x) => DiamondCosting.fromMap(x as Map<String,dynamic>),),),
-      sagadiCostings: List<SagadiCosting>.from((map['sagadiCostings'] as List<int>).map<SagadiCosting>((x) => SagadiCosting.fromMap(x as Map<String,dynamic>),),),
+      diamondCostings: List<DiamondCosting>.from(
+        (map['diamondCostings'] as List<int>).map<DiamondCosting>(
+          (x) => DiamondCosting.fromMap(x as Map<String, dynamic>),
+        ),
+      ),
+      sagadiCostings: List<SagadiCosting>.from(
+        (map['sagadiCostings'] as List<int>).map<SagadiCosting>(
+          (x) => SagadiCosting.fromMap(x as Map<String, dynamic>),
+        ),
+      ),
     );
   }
 
-  String toJson() => json.encode(toMap());
-
-  factory Costing.fromJson(String source) => Costing.fromMap(json.decode(source) as Map<String, dynamic>);
-
   @override
   String toString() {
-    return 'Costing(createdBy: $createdBy, designNo: $designNo, clientUid: $clientUid, sariName: $sariName, imageUrl: $imageUrl, sheetBharvana: $sheetBharvana, lessFiting: $lessFiting, reniyaCutting: $reniyaCutting, fusing: $fusing, dieKapvana: $dieKapvana, otherCost: $otherCost, totalCost: $totalCost, vatavPercentage: $vatavPercentage, profitPercentage: $profitPercentage, diamondCostings: $diamondCostings, sagadiCostings: $sagadiCostings)';
+    return 'Costing(GUID: $GUID, createdBy: $createdBy, designNo: $designNo, clientUid: $clientUid, sariName: $sariName, imageUrl: $imageUrl, sheetBharvana: $sheetBharvana, lessFiting: $lessFiting, reniyaCutting: $reniyaCutting, fusing: $fusing, dieKapvana: $dieKapvana, otherCost: $otherCost, totalCost: $totalCost, vatavPercentage: $vatavPercentage, profitPercentage: $profitPercentage, diamondCostings: $diamondCostings, sagadiCostings: $sagadiCostings)';
   }
 
   @override
   bool operator ==(covariant Costing other) {
     if (identical(this, other)) return true;
-  
-    return 
-      other.createdBy == createdBy &&
-      other.designNo == designNo &&
-      other.clientUid == clientUid &&
-      other.sariName == sariName &&
-      other.imageUrl == imageUrl &&
-      other.sheetBharvana == sheetBharvana &&
-      other.lessFiting == lessFiting &&
-      other.reniyaCutting == reniyaCutting &&
-      other.fusing == fusing &&
-      other.dieKapvana == dieKapvana &&
-      other.otherCost == otherCost &&
-      other.totalCost == totalCost &&
-      other.vatavPercentage == vatavPercentage &&
-      other.profitPercentage == profitPercentage &&
-      listEquals(other.diamondCostings, diamondCostings) &&
-      listEquals(other.sagadiCostings, sagadiCostings);
+
+    return other.GUID == GUID &&
+        other.createdBy == createdBy &&
+        other.designNo == designNo &&
+        other.clientUid == clientUid &&
+        other.sariName == sariName &&
+        other.imageUrl == imageUrl &&
+        other.sheetBharvana == sheetBharvana &&
+        other.lessFiting == lessFiting &&
+        other.reniyaCutting == reniyaCutting &&
+        other.fusing == fusing &&
+        other.dieKapvana == dieKapvana &&
+        other.otherCost == otherCost &&
+        other.totalCost == totalCost &&
+        other.vatavPercentage == vatavPercentage &&
+        other.profitPercentage == profitPercentage &&
+        listEquals(other.diamondCostings, diamondCostings) &&
+        listEquals(other.sagadiCostings, sagadiCostings);
   }
 
   @override
   int get hashCode {
-    return createdBy.hashCode ^
-      designNo.hashCode ^
-      clientUid.hashCode ^
-      sariName.hashCode ^
-      imageUrl.hashCode ^
-      sheetBharvana.hashCode ^
-      lessFiting.hashCode ^
-      reniyaCutting.hashCode ^
-      fusing.hashCode ^
-      dieKapvana.hashCode ^
-      otherCost.hashCode ^
-      totalCost.hashCode ^
-      vatavPercentage.hashCode ^
-      profitPercentage.hashCode ^
-      diamondCostings.hashCode ^
-      sagadiCostings.hashCode;
+    return GUID.hashCode ^
+        createdBy.hashCode ^
+        designNo.hashCode ^
+        clientUid.hashCode ^
+        sariName.hashCode ^
+        imageUrl.hashCode ^
+        sheetBharvana.hashCode ^
+        lessFiting.hashCode ^
+        reniyaCutting.hashCode ^
+        fusing.hashCode ^
+        dieKapvana.hashCode ^
+        otherCost.hashCode ^
+        totalCost.hashCode ^
+        vatavPercentage.hashCode ^
+        profitPercentage.hashCode ^
+        diamondCostings.hashCode ^
+        sagadiCostings.hashCode;
   }
 }

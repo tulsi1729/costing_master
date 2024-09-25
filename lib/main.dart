@@ -1,6 +1,6 @@
 import 'package:costing_master/auth/notifiers/auth_notifier.dart';
 import 'package:costing_master/auth/screens/login.dart';
-import 'package:costing_master/client/screen/pick_image.dart';
+import 'package:costing_master/client/screen/client_listing.dart';
 import 'package:costing_master/common/extension/async_value.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
@@ -14,7 +14,7 @@ void main() async {
 }
 
 class MyApp extends ConsumerWidget {
-  const MyApp({super.key}); 
+  const MyApp({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -24,7 +24,7 @@ class MyApp extends ConsumerWidget {
 
         return MaterialApp(
           debugShowCheckedModeBanner: false,
-          home: isAuthanticated ? PickImage() : const LoginScreen(),
+          home: isAuthanticated ? const ClientListing() : const LoginScreen(),
         );
       },
     );

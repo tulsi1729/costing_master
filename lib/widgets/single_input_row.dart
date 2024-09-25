@@ -35,7 +35,7 @@ class _SingleInputRowState extends State<SingleInputRow> {
           controller: widget.controller,
           labelPadding: 4,
           onChanged: (value) {
-            log("on changed ${widget.labelText} => ${value}", name: 'Angular');
+            log("on changed ${widget.labelText} => $value", name: 'Angular');
             double charges = double.tryParse(value) ?? 0;
             setState(() {
               this.charges = widget.onChanged(charges) ?? charges;

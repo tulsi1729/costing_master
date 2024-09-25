@@ -7,9 +7,9 @@ class CreateClient extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Create Client"),
+        title: const Text("Create Client"),
       ),
-      body: Column(
+      body: const Column(
         children: [],
       ),
     );
