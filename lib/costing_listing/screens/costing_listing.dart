@@ -1,4 +1,4 @@
-import 'package:costing_master/costing/screens/costing_steeper.dart';
+import 'package:costing_master/costing/screens/costing_stepper.dart';
 import 'package:flutter/material.dart';
 
 class CostingListing extends StatelessWidget {
@@ -17,7 +17,7 @@ class CostingListing extends StatelessWidget {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => CostingSteeper(
+              builder: (context) => CostingStepper(
                 clientName: clientName,
               ),
             ),

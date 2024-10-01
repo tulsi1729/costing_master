@@ -7,16 +7,16 @@ import 'package:costing_master/screens/preview.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class CostingSteeper extends ConsumerStatefulWidget {
+class CostingStepper extends ConsumerStatefulWidget {
   final String clientName;
 
-  const CostingSteeper({super.key, required this.clientName});
+  const CostingStepper({super.key, required this.clientName});
 
   @override
-  ConsumerState<ConsumerStatefulWidget> createState() => _SteeperState();
+  ConsumerState<ConsumerStatefulWidget> createState() => _StepperState();
 }
 
-class _SteeperState extends ConsumerState<CostingSteeper> {
+class _StepperState extends ConsumerState<CostingStepper> {
   GlobalKey<InfoState> globalKey = GlobalKey();
 
   int currentStep = 0;
@@ -28,7 +28,7 @@ class _SteeperState extends ConsumerState<CostingSteeper> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Steeper"),
+        title: const Text("Stepper"),
         actions: [
           ElevatedButton(
             onPressed: () {
