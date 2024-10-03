@@ -1,4 +1,3 @@
-// ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'dart:convert';
 
 import 'package:costing_master/common/enums.dart';
@@ -28,7 +27,8 @@ class DiamondCosting {
       diamondType: diamondType ?? this.diamondType,
       diamondRate: diamondRate ?? this.diamondRate,
       diamondsPerPart: diamondsPerPart ?? this.diamondsPerPart,
-      numbersOfPartsPerSari: numbersOfPartsPerSari ?? this.numbersOfPartsPerSari,
+      numbersOfPartsPerSari:
+          numbersOfPartsPerSari ?? this.numbersOfPartsPerSari,
       partType: partType ?? this.partType,
     );
   }
@@ -46,28 +46,25 @@ class DiamondCosting {
   factory DiamondCosting.fromMap(Map<String, dynamic> map) {
     return DiamondCosting(
       diamondType: {
-        DiamondType.dmc.toString() : DiamondType.dmc,
-        DiamondType.shadow.toString() : DiamondType.shadow,
-        DiamondType.color.toString() : DiamondType.color,
-        DiamondType.jarkan.toString() : DiamondType.jarkan,
-
-
-      }[(map['itemType'] as String)]!,
-      //  DiamondType.fromMap(map['diamondType'] as Map<String,dynamic>),
+        DiamondType.dmc.toString(): DiamondType.dmc,
+        DiamondType.shadow.toString(): DiamondType.shadow,
+        DiamondType.color.toString(): DiamondType.color,
+        DiamondType.jarkan.toString(): DiamondType.jarkan,
+      }[(map['diamondType'] as String)]!,
       diamondRate: map['diamondRate'] as double,
       diamondsPerPart: map['diamondsPerPart'] as int,
       numbersOfPartsPerSari: map['numbersOfPartsPerSari'] as double,
       partType: {
-        PartType.patti.toString() : PartType.patti,
-        PartType.buta.toString() : PartType.buta,
-      }[(map['itemType'] as String)]!,
-      // partType: PartType.fromMap(map['partType'] as Map<String,dynamic>,
-      );
+        PartType.patti.toString(): PartType.patti,
+        PartType.buta.toString(): PartType.buta,
+      }[(map['partType'] as String)]!,
+    );
   }
 
   String toJson() => json.encode(toMap());
 
-  factory DiamondCosting.fromJson(String source) => DiamondCosting.fromMap(json.decode(source) as Map<String, dynamic>);
+  factory DiamondCosting.fromJson(String source) =>
+      DiamondCosting.fromMap(json.decode(source) as Map<String, dynamic>);
 
   @override
   String toString() {
@@ -77,21 +74,20 @@ class DiamondCosting {
   @override
   bool operator ==(covariant DiamondCosting other) {
     if (identical(this, other)) return true;
-  
-    return 
-      other.diamondType == diamondType &&
-      other.diamondRate == diamondRate &&
-      other.diamondsPerPart == diamondsPerPart &&
-      other.numbersOfPartsPerSari == numbersOfPartsPerSari &&
-      other.partType == partType;
+
+    return other.diamondType == diamondType &&
+        other.diamondRate == diamondRate &&
+        other.diamondsPerPart == diamondsPerPart &&
+        other.numbersOfPartsPerSari == numbersOfPartsPerSari &&
+        other.partType == partType;
   }
 
   @override
   int get hashCode {
     return diamondType.hashCode ^
-      diamondRate.hashCode ^
-      diamondsPerPart.hashCode ^
-      numbersOfPartsPerSari.hashCode ^
-      partType.hashCode;
+        diamondRate.hashCode ^
+        diamondsPerPart.hashCode ^
+        numbersOfPartsPerSari.hashCode ^
+        partType.hashCode;
   }
 }

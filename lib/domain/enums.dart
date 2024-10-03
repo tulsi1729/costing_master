@@ -14,6 +14,6 @@ enum ChargeType {
   lessFiting, //13
   reniyaCutting, //14
   fusing, //15
-  dieCharges, //16
+  dieKapvana, //16
   otherCharges, //17
 }

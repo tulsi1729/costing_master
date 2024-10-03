@@ -9,6 +9,7 @@ import 'package:image_picker/image_picker.dart';
 
 class InfoScreen extends ConsumerStatefulWidget {
   final String clientName;
+  final InfoModel? info;
 
   final void Function(InfoModel) infoUpdate;
   final void Function(bool) setIsNavigationDisabled;
@@ -18,6 +19,7 @@ class InfoScreen extends ConsumerStatefulWidget {
     required this.clientName,
     required this.infoUpdate,
     required this.setIsNavigationDisabled,
+    required this.info,
   });
 
   @override
@@ -25,10 +27,11 @@ class InfoScreen extends ConsumerStatefulWidget {
 }
 
 class InfoState extends ConsumerState<InfoScreen> {
-  final sariNameController = TextEditingController();
-  final designNoController = TextEditingController();
+  late final TextEditingController sariNameController;
+  late final TextEditingController designNoController;
+
   String sariName = '';
-  int designNo = 0;
+  String designNo = "0";
   final ImagePicker _picker = ImagePicker();
   String? url;
   UploadTask? uploadTask;
@@ -55,6 +58,17 @@ class InfoState extends ConsumerState<InfoScreen> {
       // Save the image
       await GallerySaver.saveImage(_image!.path);
     }
+  }
+
+  @override
+  void initState() {
+    log("init  ${widget.info?.imageUrl}");
+    sariNameController = TextEditingController(text: widget.info?.sariName);
+    designNoController =
+        TextEditingController(text: widget.info?.designNo?.toString() ?? "");
+    url = widget.info?.imageUrl;
+
+    super.initState();
   }
 
   @override
@@ -217,7 +231,7 @@ class InfoState extends ConsumerState<InfoScreen> {
       InfoModel(
         clientName: widget.clientName,
         sariName: sariNameController.text,
-        designNo: int.parse(designNoController.text),
+        designNo: int.tryParse(designNoController.text),
         imageUrl: url.toString(),
       ),
     );

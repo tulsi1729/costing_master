@@ -1,10 +1,14 @@
-import 'dart:developer';
-import 'dart:ffi';
-
 import 'package:costing_master/auth/notifiers/auth_notifier.dart';
 import 'package:costing_master/auth/screens/login.dart';
+import 'package:costing_master/common/enums.dart';
 import 'package:costing_master/constants.dart';
+import 'package:costing_master/costing/notifier/costing_notifier.dart';
 import 'package:costing_master/domain/enums.dart';
+import 'package:costing_master/model/costing.dart';
+import 'package:costing_master/model/diamond_costing.dart';
+import 'package:costing_master/model/info_model.dart';
+import 'package:costing_master/model/sagadi_costing.dart';
+import 'package:costing_master/model/user_model.dart';
 import 'package:costing_master/widgets/border_container.dart';
 import 'package:costing_master/widgets/diamonds_rate_row.dart';
 import 'package:costing_master/widgets/my_answer.dart';
@@ -16,15 +20,22 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   final String clientName;
-  const HomeScreen({super.key, required this.clientName});
+  final String costingGUID;
+  final String clientUid;
+  InfoModel info;
+  HomeScreen({
+    super.key,
+    required this.clientName,
+    required this.costingGUID,
+    required this.info,
+    required this.clientUid,
+  });
 
   @override
   ConsumerState<ConsumerStatefulWidget> createState() => _HomeScreenState();
 }
 
 class _HomeScreenState extends ConsumerState<HomeScreen> {
-  List<Widget> diamondWidgets = [];
-
   Map<ChargeType, double> chargesMap = {
     ChargeType.patiShadowDiamond: 0,
     ChargeType.patiColorDiamond: 0,
@@ -41,12 +52,19 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     ChargeType.lessFiting: 0,
     ChargeType.reniyaCutting: 0,
     ChargeType.fusing: 0,
-    ChargeType.dieCharges: 0,
+    ChargeType.dieKapvana: 0,
     ChargeType.otherCharges: 0,
   };
+
+  Map<ChargeType, DiamondCosting> diamondCostingsMap = {};
+  Map<ChargeType, SagadiCosting> sagadiCostingsMap = {};
+
   double totalExpense = 0;
   double vatavAmount = 0;
   double profitAmount = 0;
+  double profitPercentage = 0;
+  double vatavPercentage = 0;
+
   final GlobalKey<_SingleInputRowState> _vatavWidgetKey =
       GlobalKey<_SingleInputRowState>();
   final GlobalKey<_SingleInputRowState> _profitWidgetKey =
@@ -61,21 +79,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
   @override
-  void initState() {
-    super.initState();
-    diamondWidgets = _singleInputDiamondList.map((singleInputDiamondList) {
-      return DiamondsRateRow(
-        elementName: singleInputDiamondList['elementName'] as String,
-        diamondName: singleInputDiamondList['diamondName'] as String,
-        onChanged: (charges) => onChanges(
-          singleInputDiamondList["chargeType"] as ChargeType,
-          charges,
-        ),
-      );
-    }).toList();
-  }
-
-  @override
   Widget build(BuildContext context) {
     return SafeArea(
       child: Container(
@@ -86,78 +89,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             padding: const EdgeInsets.symmetric(horizontal: 8.0),
             child: Column(
               children: [
-                // DiamondsRateRow(
-                //   elementName: "પટ્ટી",
-                //   diamondName: "Shadow Diamond",
-                //   onChanged: (charges) => onChanges(
-                //     ChargeType.patiShadowDiamond,
-                //     charges,
-                //   ),
-                // ),
-                // const MyDivider(),
-                // DiamondsRateRow(
-                //   elementName: "પટ્ટી",
-                //   diamondName: "Color Diamond",
-                //   onChanged: (charges) => onChanges(
-                //     ChargeType.patiColorDiamond,
-                //     charges,
-                //   ),
-                // ),
-                // const MyDivider(),
-                // DiamondsRateRow(
-                //   elementName: "પટ્ટી",
-                //   diamondName: "Jarkan ",
-                //   onChanged: (charges) => onChanges(
-                //     ChargeType.patiJarkan,
-                //     charges,
-                //   ),
-                // ),
-                // const MyDivider(),
-                // DiamondsRateRow(
-                //   elementName: "પટ્ટી",
-                //   diamondName: "DMC ",
-                //   onChanged: (charges) => onChanges(
-                //     ChargeType.patiDMC,
-                //     charges,
-                //   ),
-                // ),
-                // const MyDivider(),
-                // DiamondsRateRow(
-                //   elementName: "બુટા",
-                //   diamondName: "Shadow Diamond",
-                //   onChanged: (charges) => onChanges(
-                //     ChargeType.butaShadowDiamond,
-                //     charges,
-                //   ),
-                // ),
-                // const MyDivider(),
-                // DiamondsRateRow(
-                //   elementName: "બુટા",
-                //   diamondName: "Color Diamond",
-                //   onChanged: (charges) => onChanges(
-                //     ChargeType.butaColorDiamond,
-                //     charges,
-                //   ),
-                // ),
-                // const MyDivider(),
-                // DiamondsRateRow(
-                //   elementName: "બુટા",
-                //   diamondName: "Jarkan ",
-                //   onChanged: (charges) => onChanges(
-                //     ChargeType.butaJarkan,
-                //     charges,
-                //   ),
-                // ),
-                // const MyDivider(),
-                // DiamondsRateRow(
-                //   elementName: "બુટા",
-                //   diamondName: "DMC ",
-                //   onChanged: (charges) => onChanges(
-                //     ChargeType.butaDMC,
-                //     charges,
-                //   ),
-                // ),
-                const MyDivider(),
                 ..._buildDiamondInputRows(_singleInputDiamondList),
                 ..._buildSagadiInputRows(_sagadiInputData),
                 const MyDivider(),
@@ -174,7 +105,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         ),
                       ),
                       const Text(" = "),
-                      MyAnswer(answer: totalExpense),
+                      MyAnswer(
+                        answer: totalExpense,
+                      ),
                     ],
                   ),
                 ),
@@ -215,6 +148,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     setState(() {
                       profitAmount =
                           (totalExpense + vatavAmount) * profitPercentage / 100;
+                      this.profitPercentage = profitPercentage;
                     });
                     return profitAmount;
                   },
@@ -232,13 +166,41 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       ),
                       const Text(" = "),
                       MyAnswer(
-                          answer: totalExpense + vatavAmount + profitAmount),
+                        answer: totalExpense + vatavAmount + profitAmount,
+                      ),
                     ],
                   ),
                 ),
                 ElevatedButton(
-                    onPressed: () {
-                      log("save clicked ");
+                    onPressed: () async {
+                      UserModel userModel =
+                          (await ref.read(authProvider.future))!;
+
+                      final Costing costing = Costing(
+                        guid: widget.costingGUID,
+                        createdBy: userModel.uid,
+                        clientUid: widget.clientUid,
+                        sariName: widget.info.sariName,
+                        imageUrl: widget.info.imageUrl,
+                        sheetBharvana: chargesMap[ChargeType.sheetCharges]!,
+                        lessFiting: chargesMap[ChargeType.lessFiting]!,
+                        reniyaCutting: chargesMap[ChargeType.reniyaCutting]!,
+                        fusing: chargesMap[ChargeType.fusing]!,
+                        dieKapvana: chargesMap[ChargeType.dieKapvana]!,
+                        otherCost: chargesMap[ChargeType.otherCharges]!,
+                        vatavPercentage: vatavPercentage,
+                        profitPercentage: profitPercentage,
+                        diamondCostings: diamondCostingsMap.values.toList(),
+                        sagadiCostings: sagadiCostingsMap.values.toList(),
+                      );
+
+                      await ref
+                          .read(costingProvider.notifier)
+                          .createCosting(costing);
+                      // await ref
+                      //     .read(costingProvider.notifier)
+                      //     .refresh()
+                      //     .then((value) => Navigator.pop(context));
                     },
                     child: const Text("SAVE")),
                 const SizedBox(
@@ -260,6 +222,24 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     _vatavWidgetKey.currentState?.updateState();
     _profitWidgetKey.currentState?.updateState();
     chargesMap[chargesType] = charges;
+  }
+
+  void onChangesDiamondRow(
+    ChargeType chargesType,
+    double charges,
+    DiamondCosting diamondCosting,
+  ) {
+    onChanges(chargesType, charges);
+    diamondCostingsMap[chargesType] = diamondCosting;
+  }
+
+  void onChangesSagadiRow(
+    ChargeType chargesType,
+    double charges,
+    SagadiCosting sagadiCosting,
+  ) {
+    onChanges(chargesType, charges);
+    sagadiCostingsMap[chargesType] = sagadiCosting;
   }
 
   List<Widget> _buildSingleInputRows(List<Map<String, dynamic>> data) {
@@ -289,12 +269,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     for (int i = 0; i < data.length; i++) {
       rows.add(
         SagadiInputField(
-          labelText: data[i]['labelText'],
-          onChanged: (charges) => onChanges(
-            data[i]['chargeType'],
-            charges,
-          ),
-        ),
+            labelText: data[i]['labelText'],
+            onChanged: (charges, sagadiCosting) {
+              onChangesSagadiRow(
+                data[i]['chargeType'],
+                charges,
+                sagadiCosting,
+              );
+            }),
       );
       if (i < data.length - 1) {
         rows.add(const MyDivider());
@@ -308,13 +290,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     for (int i = 0; i < data.length; i++) {
       rows.add(
         DiamondsRateRow(
-          elementName: data[i]['elementName'],
-          diamondName: data[i]['diamondName'],
-          onChanged: (charges) => onChanges(
-            data[i]['chargeType'],
-            charges,
-          ),
-        ),
+            partType: data[i]['partType'],
+            diamondType: data[i]['diamondType'],
+            onChanged: (charges, diamongCosting) {
+              onChangesDiamondRow(
+                data[i]['chargeType'],
+                charges,
+                diamongCosting,
+              );
+            }),
       );
       if (i < data.length - 1) {
         rows.add(const MyDivider());
@@ -325,43 +309,43 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   final _singleInputDiamondList = [
     {
-      "elementName": "પટ્ટી",
-      "diamondName": "Shadow Diamond",
+      "partType": PartType.buta,
+      "diamondType": DiamondType.shadow,
       "chargeType": ChargeType.patiShadowDiamond,
     },
     {
-      "elementName": "પટ્ટી",
-      "diamondName": "Color Diamond",
+      "partType": PartType.buta,
+      "diamondType": DiamondType.color,
       "chargeType": ChargeType.patiColorDiamond,
     },
     {
-      "elementName": "પટ્ટી",
-      "diamondName": "Jarkan",
+      "partType": PartType.buta,
+      "diamondType": DiamondType.jarkan,
       "chargeType": ChargeType.patiJarkan,
     },
     {
-      "elementName": "પટ્ટી",
-      "diamondName": "DMC ",
+      "partType": PartType.buta,
+      "diamondType": DiamondType.dmc,
       "chargeType": ChargeType.patiDMC,
     },
     {
-      "elementName": "બુટા",
-      "diamondName": "Shadow Diamond",
+      "partType": PartType.buta,
+      "diamondType": DiamondType.shadow,
       "chargeType": ChargeType.butaShadowDiamond,
     },
     {
-      "elementName": "બુટા",
-      "diamondName": "Color Diamond",
+      "partType": PartType.buta,
+      "diamondType": DiamondType.color,
       "chargeType": ChargeType.butaColorDiamond,
     },
     {
-      "elementName": "બુટા",
-      "diamondName": "Jarkan",
+      "partType": PartType.buta,
+      "diamondType": DiamondType.jarkan,
       "chargeType": ChargeType.butaJarkan,
     },
     {
-      "elementName": "બુટા",
-      "diamondName": "DMC ",
+      "partType": PartType.buta,
+      "diamondType": DiamondType.dmc,
       "chargeType": ChargeType.butaDMC,
     }
   ];
@@ -385,7 +369,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     },
     {
       "labelText": "ડાય કાપવાના",
-      "chargeType": ChargeType.dieCharges,
+      "chargeType": ChargeType.dieKapvana,
     },
     {
       "labelText": "અન્ય ખર્ચ",
@@ -445,7 +429,9 @@ class _SingleInputRowState extends State<SingleInputRow> {
           },
         ),
         const Text(" = "),
-        MyAnswer(answer: charges),
+        MyAnswer(
+          answer: charges,
+        ),
         const SizedBox(
           height: 24,
         ),

@@ -5,36 +5,36 @@ import 'package:costing_master/costings/repository/costings_repository.dart';
 import 'package:costing_master/model/costing.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class CostingNotifier extends AsyncNotifier<List<Costing>> {
+class CostingsNotifier extends AsyncNotifier<List<Costing>> {
   late final CostingsRepository _costingsRepository;
 
   @override
   FutureOr<List<Costing>> build() async {
     _costingsRepository = ref.read(costingsRepositoryProvider);
     state = const AsyncLoading();
-    return await getCosting();
+    return await getCostings();
   }
 
-  Future<bool> createCosting(Costing costing) async {
-    final bool isCostingsCreated =
-        await _costingsRepository.createCosting(costing);
-    return isCostingsCreated;
+  Future<bool> createCostings(Costing costing) async {
+    final bool isCostingCreated =
+        await _costingsRepository.createCostings(costing);
+    return isCostingCreated;
   }
 
-  Future<List<Costing>> getCosting() async {
+  Future<List<Costing>> getCostings() async {
     final loggedInUserUid = (await ref.read(authProvider.future))!.uid;
-    final List<Costing> costing =
-        await _costingsRepository.getUserCosting(loggedInUserUid);
+    final List<Costing> costings =
+        await _costingsRepository.getUserCostings(loggedInUserUid);
 
-    return costing;
+    return costings;
   }
 
   Future<void> refresh() async {
     state = const AsyncLoading();
-    List<Costing> costing = await getCosting();
-    state = AsyncValue.data(costing);
+    List<Costing> costings = await getCostings();
+    state = AsyncValue.data(costings);
   }
 }
 
-final costingProvider =
-    AsyncNotifierProvider<CostingNotifier, List<Costing>>(CostingNotifier.new);
+final costingsProvider = AsyncNotifierProvider<CostingsNotifier, List<Costing>>(
+    CostingsNotifier.new);

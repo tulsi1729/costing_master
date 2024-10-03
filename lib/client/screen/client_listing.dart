@@ -61,7 +61,9 @@ class _CreateNewClientState extends ConsumerState<ClientListing> {
                 return GestureDetector(
                     child: Card(
                       child: ListTile(
-                        title: Text(client.name),
+                        title: Text(
+                          client.name,
+                        ),
                       ),
                     ),
                     onTap: () {
@@ -70,6 +72,7 @@ class _CreateNewClientState extends ConsumerState<ClientListing> {
                         MaterialPageRoute(
                           builder: (context) => CostingListing(
                             clientName: client.name,
+                            clientUid: client.uid,
                           ),
                         ),
                       );

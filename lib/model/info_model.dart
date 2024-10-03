@@ -1,12 +1,12 @@
 class InfoModel {
   String clientName;
   String sariName;
-  int designNo;
+  int? designNo;
   String imageUrl;
   InfoModel({
     required this.clientName,
     required this.sariName,
-    required this.designNo,
+    this.designNo,
     required this.imageUrl,
   });
 

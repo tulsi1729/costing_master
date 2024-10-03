@@ -1,11 +1,13 @@
+import 'package:costing_master/common/enums.dart';
 import 'package:costing_master/constants.dart';
+import 'package:costing_master/model/sagadi_costing.dart';
 import 'package:costing_master/widgets/my_answer.dart';
 import 'package:costing_master/widgets/my_text_field.dart';
 import 'package:flutter/material.dart';
 
 class SagadiInputField extends StatefulWidget {
   final String labelText;
-  final void Function(double) onChanged;
+  final void Function(double, SagadiCosting) onChanged;
   const SagadiInputField({
     super.key,
     required this.labelText,
@@ -17,6 +19,12 @@ class SagadiInputField extends StatefulWidget {
 }
 
 class _SagadiInputFieldState extends State<SagadiInputField> {
+  Map<SagadiItemType, String> sagadiTypeMap = {
+    SagadiItemType.buta: 'buta',
+    SagadiItemType.less: 'less',
+    SagadiItemType.valiya: 'valiya',
+  };
+
   TextEditingController elementsCountController = TextEditingController();
   TextEditingController oneElementRateController = TextEditingController();
   double totalSum = 0;
@@ -50,6 +58,11 @@ class _SagadiInputFieldState extends State<SagadiInputField> {
     setState(() {
       totalSum = elementsCount * oneElementRate;
     });
-    widget.onChanged(totalSum);
+    widget.onChanged(
+        totalSum,
+        SagadiCosting(
+          itemsCount: elementsCount,
+          chargePerItem: oneElementRate,
+        ));
   }
 }
