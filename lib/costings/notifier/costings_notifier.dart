@@ -17,7 +17,7 @@ class CostingsNotifier extends AsyncNotifier<List<Costing>> {
 
   Future<bool> createCostings(Costing costing) async {
     final bool isCostingCreated =
-        await _costingsRepository.createCostings(costing);
+        await _costingsRepository.createCosting(costing);
     return isCostingCreated;
   }
 

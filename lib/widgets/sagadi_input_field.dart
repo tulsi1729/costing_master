@@ -7,11 +7,13 @@ import 'package:flutter/material.dart';
 
 class SagadiInputField extends StatefulWidget {
   final String labelText;
+  final SagadiItemType itemType;
   final void Function(double, SagadiCosting) onChanged;
   const SagadiInputField({
     super.key,
     required this.labelText,
     required this.onChanged,
+    required this.itemType,
   });
 
   @override
@@ -61,6 +63,7 @@ class _SagadiInputFieldState extends State<SagadiInputField> {
     widget.onChanged(
         totalSum,
         SagadiCosting(
+          itemType: widget.itemType,
           itemsCount: elementsCount,
           chargePerItem: oneElementRate,
         ));

@@ -1,8 +1,9 @@
+import 'dart:developer';
+
 import 'package:costing_master/auth/notifiers/auth_notifier.dart';
 import 'package:costing_master/auth/screens/login.dart';
 import 'package:costing_master/common/enums.dart';
 import 'package:costing_master/constants.dart';
-import 'package:costing_master/costing/notifier/costing_notifier.dart';
 import 'package:costing_master/domain/enums.dart';
 import 'package:costing_master/model/costing.dart';
 import 'package:costing_master/model/diamond_costing.dart';
@@ -22,20 +23,26 @@ class HomeScreen extends ConsumerStatefulWidget {
   final String clientName;
   final String costingGUID;
   final String clientUid;
-  InfoModel info;
-  HomeScreen({
+  final InfoModel info;
+  final Costing? costing;
+
+  final void Function(Costing) costingUpdate;
+
+  const HomeScreen({
     super.key,
     required this.clientName,
     required this.costingGUID,
     required this.info,
     required this.clientUid,
+    required this.costingUpdate,
+    required this.costing,
   });
 
   @override
-  ConsumerState<ConsumerStatefulWidget> createState() => _HomeScreenState();
+  ConsumerState<ConsumerStatefulWidget> createState() => HomeScreenState();
 }
 
-class _HomeScreenState extends ConsumerState<HomeScreen> {
+class HomeScreenState extends ConsumerState<HomeScreen> {
   Map<ChargeType, double> chargesMap = {
     ChargeType.patiShadowDiamond: 0,
     ChargeType.patiColorDiamond: 0,
@@ -56,14 +63,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     ChargeType.otherCharges: 0,
   };
 
-  Map<ChargeType, DiamondCosting> diamondCostingsMap = {};
-  Map<ChargeType, SagadiCosting> sagadiCostingsMap = {};
+  Map<DiamondType, DiamondCosting> diamondCostingsMap = {};
+  Map<SagadiItemType, SagadiCosting> sagadiCostingsMap = {};
 
   double totalExpense = 0;
   double vatavAmount = 0;
   double profitAmount = 0;
   double profitPercentage = 0;
   double vatavPercentage = 0;
+  DiamondCosting? diamondCosting;
 
   final GlobalKey<_SingleInputRowState> _vatavWidgetKey =
       GlobalKey<_SingleInputRowState>();
@@ -76,6 +84,34 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       context,
       MaterialPageRoute(builder: (context) => const LoginScreen()),
     );
+  }
+
+  Future saveCostingModelToParent() async {
+    UserModel userModel = (await ref.read(authProvider.future))!;
+    widget.costingUpdate(
+      Costing(
+        guid: widget.costingGUID,
+        createdBy: userModel.uid,
+        clientUid: widget.clientUid,
+        sariName: widget.info.sariName,
+        imageUrl: widget.info.imageUrl,
+        sheetBharvana: chargesMap[ChargeType.sheetCharges]!,
+        lessFiting: chargesMap[ChargeType.lessFiting]!,
+        reniyaCutting: chargesMap[ChargeType.reniyaCutting]!,
+        fusing: chargesMap[ChargeType.fusing]!,
+        dieKapvana: chargesMap[ChargeType.dieKapvana]!,
+        otherCost: chargesMap[ChargeType.otherCharges]!,
+        vatavPercentage: vatavPercentage,
+        profitPercentage: profitPercentage,
+        diamondCostingsMap: diamondCostingsMap,
+        sagadiCostingsMap: sagadiCostingsMap,
+      ),
+    );
+  }
+
+  @override
+  void initState() {
+    super.initState();
   }
 
   @override
@@ -171,41 +207,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     ],
                   ),
                 ),
-                ElevatedButton(
-                    onPressed: () async {
-                      UserModel userModel =
-                          (await ref.read(authProvider.future))!;
-
-                      final Costing costing = Costing(
-                        guid: widget.costingGUID,
-                        createdBy: userModel.uid,
-                        clientUid: widget.clientUid,
-                        sariName: widget.info.sariName,
-                        imageUrl: widget.info.imageUrl,
-                        sheetBharvana: chargesMap[ChargeType.sheetCharges]!,
-                        lessFiting: chargesMap[ChargeType.lessFiting]!,
-                        reniyaCutting: chargesMap[ChargeType.reniyaCutting]!,
-                        fusing: chargesMap[ChargeType.fusing]!,
-                        dieKapvana: chargesMap[ChargeType.dieKapvana]!,
-                        otherCost: chargesMap[ChargeType.otherCharges]!,
-                        vatavPercentage: vatavPercentage,
-                        profitPercentage: profitPercentage,
-                        diamondCostings: diamondCostingsMap.values.toList(),
-                        sagadiCostings: sagadiCostingsMap.values.toList(),
-                      );
-
-                      await ref
-                          .read(costingProvider.notifier)
-                          .createCosting(costing);
-                      // await ref
-                      //     .read(costingProvider.notifier)
-                      //     .refresh()
-                      //     .then((value) => Navigator.pop(context));
-                    },
-                    child: const Text("SAVE")),
-                const SizedBox(
-                  height: 50,
-                ),
               ],
             ),
           ),
@@ -230,7 +231,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     DiamondCosting diamondCosting,
   ) {
     onChanges(chargesType, charges);
-    diamondCostingsMap[chargesType] = diamondCosting;
+    diamondCostingsMap[diamondCosting.diamondType] = diamondCosting;
   }
 
   void onChangesSagadiRow(
@@ -239,7 +240,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     SagadiCosting sagadiCosting,
   ) {
     onChanges(chargesType, charges);
-    sagadiCostingsMap[chargesType] = sagadiCosting;
+    sagadiCostingsMap[sagadiCosting.itemType] = sagadiCosting;
   }
 
   List<Widget> _buildSingleInputRows(List<Map<String, dynamic>> data) {
@@ -269,6 +270,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     for (int i = 0; i < data.length; i++) {
       rows.add(
         SagadiInputField(
+            itemType: data[i]["itemType"],
             labelText: data[i]['labelText'],
             onChanged: (charges, sagadiCosting) {
               onChangesSagadiRow(
@@ -290,15 +292,17 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     for (int i = 0; i < data.length; i++) {
       rows.add(
         DiamondsRateRow(
-            partType: data[i]['partType'],
-            diamondType: data[i]['diamondType'],
-            onChanged: (charges, diamongCosting) {
-              onChangesDiamondRow(
-                data[i]['chargeType'],
-                charges,
-                diamongCosting,
-              );
-            }),
+          // diamondCosting: diamondCosting,
+          partType: data[i]['partType'],
+          diamondType: data[i]['diamondType'],
+          onChanged: (charges, diamongCosting) {
+            onChangesDiamondRow(
+              data[i]['chargeType'],
+              charges,
+              diamongCosting,
+            );
+          },
+        ),
       );
       if (i < data.length - 1) {
         rows.add(const MyDivider());
@@ -381,14 +385,17 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     {
       "labelText": "સગડી બુટા",
       "chargeType": ChargeType.butaSagadiCharges,
+      "itemType": SagadiItemType.buta,
     },
     {
       "labelText": "સગડી લેસ",
       "chargeType": ChargeType.lessSagadiCharges,
+      "itemType": SagadiItemType.less,
     },
     {
       "labelText": "સગડી વળીયા",
       "chargeType": ChargeType.valiyaSagadiCharges,
+      "itemType": SagadiItemType.valiya,
     },
   ];
 }

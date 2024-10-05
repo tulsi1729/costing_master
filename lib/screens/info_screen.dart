@@ -62,13 +62,11 @@ class InfoState extends ConsumerState<InfoScreen> {
 
   @override
   void initState() {
-    log("init  ${widget.info?.imageUrl}");
+    super.initState();
     sariNameController = TextEditingController(text: widget.info?.sariName);
     designNoController =
-        TextEditingController(text: widget.info?.designNo?.toString() ?? "");
+        TextEditingController(text: widget.info?.designNo.toString() ?? "");
     url = widget.info?.imageUrl;
-
-    super.initState();
   }
 
   @override
@@ -257,7 +255,6 @@ class InfoState extends ConsumerState<InfoScreen> {
       setState(() {
         url = url1;
       });
-      log(url ?? "url is null");
     } else {
       log('No image selected.');
     }

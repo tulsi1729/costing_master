@@ -16,15 +16,15 @@ class CostingNotifier extends AsyncNotifier<List<Costing>> {
   }
 
   Future<bool> createCosting(Costing costing) async {
-    final bool isCostingsCreated =
+    final bool isCostingCreated =
         await _costingsRepository.createCosting(costing);
-    return isCostingsCreated;
+    return isCostingCreated;
   }
 
   Future<List<Costing>> getCosting() async {
     final loggedInUserUid = (await ref.read(authProvider.future))!.uid;
     final List<Costing> costing =
-        await _costingsRepository.getUserCosting(loggedInUserUid);
+        await _costingsRepository.getUserCostings(loggedInUserUid);
 
     return costing;
   }

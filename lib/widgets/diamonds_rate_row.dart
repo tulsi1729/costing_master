@@ -8,12 +8,14 @@ import 'package:flutter/material.dart';
 class DiamondsRateRow extends StatefulWidget {
   final PartType partType;
   final DiamondType diamondType;
+  // final DiamondCosting diamondCosting;
   final void Function(double, DiamondCosting) onChanged;
   const DiamondsRateRow({
     super.key,
     required this.partType,
     required this.diamondType,
     required this.onChanged,
+    // required this.diamondCosting,
   });
 
   @override
@@ -34,10 +36,18 @@ class _DiamondsRateRowState extends State<DiamondsRateRow> {
   };
 
   static int n = 100;
-  TextEditingController diamondsPerElementController = TextEditingController();
-  TextEditingController elementsCountController = TextEditingController();
-  TextEditingController diamondsRateController = TextEditingController();
+  late final TextEditingController diamondsPerElementController;
+  late final TextEditingController elementsCountController;
+  late final TextEditingController diamondsRateController;
   double totalSum = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    diamondsPerElementController = TextEditingController();
+    elementsCountController = TextEditingController();
+    diamondsRateController = TextEditingController();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -86,6 +96,5 @@ class _DiamondsRateRowState extends State<DiamondsRateRow> {
             diamondsPerPart: diamondsPerElement,
             numbersOfPartsPerSari: elementsCount,
             partType: widget.partType));
-    // log("diamond $totalSum.toString()");
   }
 }

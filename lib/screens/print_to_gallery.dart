@@ -20,7 +20,6 @@ class PrintToGallery extends StatelessWidget {
     if (byteData != null) {
       final result = await ImageGallerySaver.saveImage(
           quality: 100, byteData.buffer.asUint8List());
-      log(result);
     }
   }
 

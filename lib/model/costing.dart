@@ -1,5 +1,8 @@
+import 'dart:convert';
+
 import 'package:flutter/foundation.dart';
 
+import 'package:costing_master/common/enums.dart';
 import 'package:costing_master/model/diamond_costing.dart';
 import 'package:costing_master/model/sagadi_costing.dart';
 
@@ -18,8 +21,8 @@ class Costing {
   double otherCost;
   double vatavPercentage;
   double profitPercentage;
-  List<DiamondCosting> diamondCostings;
-  List<SagadiCosting> sagadiCostings;
+  Map<DiamondType, DiamondCosting>? diamondCostingsMap;
+  Map<SagadiItemType, SagadiCosting>? sagadiCostingsMap;
 
   Costing({
     required this.guid,
@@ -36,8 +39,8 @@ class Costing {
     required this.otherCost,
     required this.vatavPercentage,
     required this.profitPercentage,
-    required this.diamondCostings,
-    required this.sagadiCostings,
+    required this.diamondCostingsMap,
+    required this.sagadiCostingsMap,
   });
 
   Costing copyWith({
@@ -53,11 +56,10 @@ class Costing {
     double? fusing,
     double? dieKapvana,
     double? otherCost,
-    double? totalCost,
     double? vatavPercentage,
     double? profitPercentage,
-    List<DiamondCosting>? diamondCostings,
-    List<SagadiCosting>? sagadiCostings,
+    Map<DiamondType, DiamondCosting>? diamondCostingsMap,
+    Map<SagadiItemType, SagadiCosting>? sagadiCostingsMap,
   }) {
     return Costing(
       guid: guid ?? this.guid,
@@ -74,8 +76,8 @@ class Costing {
       otherCost: otherCost ?? this.otherCost,
       vatavPercentage: vatavPercentage ?? this.vatavPercentage,
       profitPercentage: profitPercentage ?? this.profitPercentage,
-      diamondCostings: diamondCostings ?? this.diamondCostings,
-      sagadiCostings: sagadiCostings ?? this.sagadiCostings,
+      diamondCostingsMap: diamondCostingsMap ?? this.diamondCostingsMap,
+      sagadiCostingsMap: sagadiCostingsMap ?? this.sagadiCostingsMap,
     );
   }
 
@@ -95,8 +97,12 @@ class Costing {
       'otherCost': otherCost,
       'vatavPercentage': vatavPercentage,
       'profitPercentage': profitPercentage,
-      'diamondCostings': diamondCostings.map((x) => x.toMap()).toList(),
-      'sagadiCostings': sagadiCostings.map((x) => x.toMap()).toList(),
+      'diamondCostingsMap': diamondCostingsMap == null
+          ? null
+          : _convertToStringDynamicDiamondMap(diamondCostingsMap!),
+      'sagadiCostingsMap': sagadiCostingsMap == null
+          ? null
+          : _convertToStringDynamicSagadiMap(sagadiCostingsMap!),
     };
   }
 
@@ -116,22 +122,23 @@ class Costing {
       otherCost: map['otherCost'] as double,
       vatavPercentage: map['vatavPercentage'] as double,
       profitPercentage: map['profitPercentage'] as double,
-      diamondCostings: List<DiamondCosting>.from(
-        (map['diamondCostings'] as List<dynamic>).map<DiamondCosting>(
-          (x) => DiamondCosting.fromMap(x as Map<String, dynamic>),
-        ),
-      ),
-      sagadiCostings: List<SagadiCosting>.from(
-        (map['sagadiCostings'] as List<dynamic>).map<SagadiCosting>(
-          (x) => SagadiCosting.fromMap(x as Map<String, dynamic>),
-        ),
-      ),
+      diamondCostingsMap: map['diamondCostingsMap'] != null
+          ? _convertToDiamondCostingMap(map['diamondCostingsMap'])
+          : null,
+      sagadiCostingsMap: map['sagadiCostingsMap'] != null
+          ? _convertToSagadiCostingMap(map['sagadiCostingsMap'])
+          : null,
     );
   }
 
+  String toJson() => json.encode(toMap());
+
+  factory Costing.fromJson(String source) =>
+      Costing.fromMap(json.decode(source) as Map<String, dynamic>);
+
   @override
   String toString() {
-    return 'Costing(guid: $guid, createdBy: $createdBy, designNo: $designNo, clientUid: $clientUid, sariName: $sariName, imageUrl: $imageUrl, sheetBharvana: $sheetBharvana, lessFiting: $lessFiting, reniyaCutting: $reniyaCutting, fusing: $fusing, dieKapvana: $dieKapvana, otherCost: $otherCost,vatavPercentage: $vatavPercentage, profitPercentage: $profitPercentage, diamondCostings: $diamondCostings, sagadiCostings: $sagadiCostings)';
+    return 'Costing(guid: $guid, createdBy: $createdBy, designNo: $designNo, clientUid: $clientUid, sariName: $sariName, imageUrl: $imageUrl, sheetBharvana: $sheetBharvana, lessFiting: $lessFiting, reniyaCutting: $reniyaCutting, fusing: $fusing, dieKapvana: $dieKapvana, otherCost: $otherCost, vatavPercentage: $vatavPercentage, profitPercentage: $profitPercentage, diamondCostingsMap: $diamondCostingsMap, sagadiCostingsMap: $sagadiCostingsMap)';
   }
 
   @override
@@ -152,8 +159,8 @@ class Costing {
         other.otherCost == otherCost &&
         other.vatavPercentage == vatavPercentage &&
         other.profitPercentage == profitPercentage &&
-        listEquals(other.diamondCostings, diamondCostings) &&
-        listEquals(other.sagadiCostings, sagadiCostings);
+        mapEquals(other.diamondCostingsMap, diamondCostingsMap) &&
+        mapEquals(other.sagadiCostingsMap, sagadiCostingsMap);
   }
 
   @override
@@ -172,7 +179,59 @@ class Costing {
         otherCost.hashCode ^
         vatavPercentage.hashCode ^
         profitPercentage.hashCode ^
-        diamondCostings.hashCode ^
-        sagadiCostings.hashCode;
+        diamondCostingsMap.hashCode ^
+        sagadiCostingsMap.hashCode;
+  }
+
+  static Map<SagadiItemType, SagadiCosting> _convertToSagadiCostingMap(
+      Map<String, dynamic> dynamicMap) {
+    Map<SagadiItemType, SagadiCosting> sagadiCostingMap = {};
+
+    dynamicMap.forEach((key, value) {
+      SagadiCosting costing = SagadiCosting.fromMap(value);
+      sagadiCostingMap[costing.itemType] = costing;
+    });
+
+    return sagadiCostingMap;
+  }
+
+  static Map<DiamondType, DiamondCosting> _convertToDiamondCostingMap(
+      Map<String, dynamic> dynamicMap) {
+    Map<DiamondType, DiamondCosting> diamondCostingMap = {};
+
+    dynamicMap.forEach((key, value) {
+      if (value is Map<String, dynamic>) {
+        DiamondCosting costing = DiamondCosting.fromMap(value);
+        diamondCostingMap[costing.diamondType] = costing;
+      }
+    });
+
+    return diamondCostingMap;
+  }
+
+  static Map<String, dynamic> _convertToStringDynamicDiamondMap(
+      Map<DiamondType, DiamondCosting> dynamicMap) {
+    Map<String, dynamic> diamondCostingMap = {};
+
+    dynamicMap.forEach((key, value) {
+      dynamic costing = value.toMap();
+      diamondCostingMap[value.diamondType.toString()] = costing;
+    });
+
+    return diamondCostingMap;
+  }
+
+  static Map<String, dynamic> _convertToStringDynamicSagadiMap(
+      Map<SagadiItemType, SagadiCosting> dynamicMap) {
+    Map<String, dynamic> sagadiCostingMap = {};
+
+    dynamicMap.forEach((key, value) {
+      if (value is Map<String, dynamic>) {
+        dynamic costing = value.toMap();
+        sagadiCostingMap[value.itemType.toString()] = costing;
+      }
+    });
+
+    return sagadiCostingMap;
   }
 }

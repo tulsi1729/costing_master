@@ -1,5 +1,8 @@
 import 'dart:developer';
 
+import 'package:costing_master/costing/notifier/costing_notifier.dart';
+import 'package:costing_master/costing_listing/screens/costing_listing.dart';
+import 'package:costing_master/loading%20/notifier/loading_notifier.dart';
 import 'package:costing_master/model/costing.dart';
 import 'package:costing_master/model/info_model.dart';
 import 'package:costing_master/screens/home_screen.dart';
@@ -27,21 +30,23 @@ class CostingStepper extends ConsumerStatefulWidget {
 
 class _StepperState extends ConsumerState<CostingStepper> {
   GlobalKey<InfoState> globalKey = GlobalKey();
+  GlobalKey<HomeScreenState> HomeScreenGlobalKey = GlobalKey();
 
   int currentStep = 0;
   bool isCompleted = false;
   InfoModel? info;
+  Costing? costing;
   late String costingGUID;
   bool isNavigationDisabled = false;
 
   @override
   void initState() {
     super.initState();
-    log("initstate in costing  ${widget.costing}");
     if (widget.costing == null) {
       costingGUID = const Uuid().v4();
     } else {
       costingGUID = widget.costing!.guid;
+
       info = InfoModel(
         clientName: widget.clientName,
         sariName: widget.costing!.sariName,
@@ -56,14 +61,6 @@ class _StepperState extends ConsumerState<CostingStepper> {
     return Scaffold(
       appBar: AppBar(
         title: const Text("Stepper"),
-        actions: [
-          ElevatedButton(
-            onPressed: () {
-              log('info is $info');
-            },
-            child: const Text("check info"),
-          )
-        ],
       ),
       body: Stepper(
         type: StepperType.horizontal,
@@ -104,8 +101,7 @@ class _StepperState extends ConsumerState<CostingStepper> {
                   Expanded(
                     child: ElevatedButton(
                       onPressed: () {
-                        controlsDetails.onStepCancel;
-                        log("back");
+                        controlsDetails.onStepCancel!();
                       },
                       child: const Text("Back"),
                     ),
@@ -115,39 +111,58 @@ class _StepperState extends ConsumerState<CostingStepper> {
                 ),
                 if (currentStep == 0)
                   Expanded(
-                      child: ElevatedButton(
-                    onPressed: isNavigationDisabled
-                        ? null
-                        : () {
-                            if (globalKey.currentState != null) {
-                              globalKey.currentState!.saveInfoModelToParent();
-                            }
+                    child: ElevatedButton(
+                      onPressed: isNavigationDisabled
+                          ? null
+                          : () {
+                              if (globalKey.currentState != null) {
+                                globalKey.currentState!.saveInfoModelToParent();
+                              }
 
-                            controlsDetails.onStepContinue!();
-                          },
-                    child: const Text("Next"),
-                  )),
+                              controlsDetails.onStepContinue!();
+                            },
+                      child: const Text("Next"),
+                    ),
+                  ),
                 if (currentStep == 1)
                   Expanded(
                       child: ElevatedButton(
                     onPressed: isNavigationDisabled
                         ? null
-                        : () {
-                            log("costing");
+                        : () async {
+                            ref.read(loadingProvider.notifier).set(true);
+                            if (HomeScreenGlobalKey.currentState == null) {
+                              log("currentstate null ${HomeScreenGlobalKey.currentState.toString()}");
+                            } else if (HomeScreenGlobalKey.currentState !=
+                                null) {
+                              await HomeScreenGlobalKey.currentState!
+                                  .saveCostingModelToParent();
 
-                            if (globalKey.currentState != null) {
-                              globalKey.currentState!.saveInfoModelToParent();
+                              await ref
+                                  .read(costingProvider.notifier)
+                                  .createCosting(costing!);
+                              await ref
+                                  .read(costingProvider.notifier)
+                                  .refresh();
                             }
                             controlsDetails.onStepContinue!();
+                            ref.read(loadingProvider.notifier).set(false);
                           },
-                    child: const Text("Next"),
+                    child: const Text("Next "),
                   )),
                 if (currentStep == 2)
                   Expanded(
                     child: ElevatedButton(
                       onPressed: () {
-                        controlsDetails.onStepContinue!();
-                        log("    2   ");
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => CostingListing(
+                              clientName: widget.clientName,
+                              clientUid: widget.clientUid,
+                            ),
+                          ),
+                        );
                       },
                       child: const Text("Done"),
                     ),
@@ -170,7 +185,6 @@ class _StepperState extends ConsumerState<CostingStepper> {
               setState(() {
                 this.isNavigationDisabled = isNavigationDisabled;
               });
-              log("info after  $isNavigationDisabled");
             },
             key: globalKey,
             clientName: widget.clientName,
@@ -187,10 +201,16 @@ class _StepperState extends ConsumerState<CostingStepper> {
           content: info == null
               ? Container()
               : HomeScreen(
+                  key: HomeScreenGlobalKey,
                   clientName: widget.clientName,
                   clientUid: widget.clientUid,
                   costingGUID: costingGUID,
                   info: info!,
+                  costingUpdate: (Costing costing) {
+                    this.costing = costing;
+                    log("this costing ${this.costing}");
+                  },
+                  costing: costing,
                 ),
         ),
         Step(

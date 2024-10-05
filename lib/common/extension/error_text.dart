@@ -13,7 +13,6 @@ class ErrorText extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    log(error, name: "error text");
     return SafeArea(
       child: Column(
         children: [

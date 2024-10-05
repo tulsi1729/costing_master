@@ -2,6 +2,8 @@ import 'package:costing_master/auth/notifiers/auth_notifier.dart';
 import 'package:costing_master/auth/screens/login.dart';
 import 'package:costing_master/client/screen/client_listing.dart';
 import 'package:costing_master/common/extension/async_value.dart';
+import 'package:costing_master/loading%20/notifier/loading_notifier.dart';
+import 'package:costing_master/loading%20/screens/loading_wrapper.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -22,10 +24,17 @@ class MyApp extends ConsumerWidget {
     return ref.watch(authProvider).whenWidget(
       (user) {
         bool isAuthanticated = user != null;
+        bool isLoading = ref.watch(loadingProvider);
 
         return MaterialApp(
-          debugShowCheckedModeBanner: false,
-          home: isAuthanticated ? const ClientListing() : const LoginScreen(),
+          home: isAuthanticated
+              ? Stack(
+                  children: [
+                    const ClientListing(),
+                    isLoading ? const LoadingWrapper() : Container()
+                  ],
+                )
+              : const LoginScreen(),
         );
       },
     );

@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:costing_master/auth/notifiers/auth_notifier.dart';
 import 'package:costing_master/auth/screens/login.dart';
 import 'package:costing_master/client/notifier/client_notifier.dart';
@@ -118,17 +120,15 @@ class _CreateNewClientState extends ConsumerState<ClientListing> {
                                       name: clientNameController.text,
                                       createdBy: userModel.uid,
                                     );
-                                    await ref
+                                    final client = await ref
                                         .read(clientsProvider.notifier)
                                         .createClient(newClient);
+                                    log("client saved  ${client.toString()}");
                                     await ref
                                         .read(clientsProvider.notifier)
                                         .refresh()
                                         .then(
                                             (value) => Navigator.pop(context));
-
-                                    debugPrint(
-                                        " New Party  ${clientNameController.text}");
                                   },
                                   child: const Text("Save Party"),
                                 ),
