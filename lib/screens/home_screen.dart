@@ -3,7 +3,6 @@ import 'dart:developer';
 import 'package:costing_master/auth/notifiers/auth_notifier.dart';
 import 'package:costing_master/auth/screens/login.dart';
 import 'package:costing_master/common/enums.dart';
-import 'package:costing_master/constants.dart';
 import 'package:costing_master/domain/enums.dart';
 import 'package:costing_master/model/costing.dart';
 import 'package:costing_master/model/diamond_costing.dart';
@@ -14,8 +13,8 @@ import 'package:costing_master/widgets/border_container.dart';
 import 'package:costing_master/widgets/diamonds_rate_row.dart';
 import 'package:costing_master/widgets/my_answer.dart';
 import 'package:costing_master/widgets/my_divider.dart';
-import 'package:costing_master/widgets/my_text_field.dart';
 import 'package:costing_master/widgets/sagadi_input_field.dart';
+import 'package:costing_master/widgets/single_input_row_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -71,12 +70,11 @@ class HomeScreenState extends ConsumerState<HomeScreen> {
   double profitAmount = 0;
   double profitPercentage = 0;
   double vatavPercentage = 0;
-  DiamondCosting? diamondCosting;
 
-  final GlobalKey<_SingleInputRowState> _vatavWidgetKey =
-      GlobalKey<_SingleInputRowState>();
-  final GlobalKey<_SingleInputRowState> _profitWidgetKey =
-      GlobalKey<_SingleInputRowState>();
+  final GlobalKey<SingleInputRowState> _vatavWidgetKey =
+      GlobalKey<SingleInputRowState>();
+  final GlobalKey<SingleInputRowState> _profitWidgetKey =
+      GlobalKey<SingleInputRowState>();
 
   void logOut() {
     ref.read(authProvider.notifier).logOut();
@@ -112,6 +110,10 @@ class HomeScreenState extends ConsumerState<HomeScreen> {
   @override
   void initState() {
     super.initState();
+    log(
+      "costing in initState of home screen is ${widget.costing}",
+      name: "initState",
+    );
   }
 
   @override
@@ -270,6 +272,8 @@ class HomeScreenState extends ConsumerState<HomeScreen> {
     for (int i = 0; i < data.length; i++) {
       rows.add(
         SagadiInputField(
+            sagadiCosting:
+                widget.costing?.sagadiCostingsMap?[data[i]['inputType']],
             itemType: data[i]["itemType"],
             labelText: data[i]['labelText'],
             onChanged: (charges, sagadiCosting) {
@@ -292,14 +296,15 @@ class HomeScreenState extends ConsumerState<HomeScreen> {
     for (int i = 0; i < data.length; i++) {
       rows.add(
         DiamondsRateRow(
-          // diamondCosting: diamondCosting,
+          diamondCosting:
+              widget.costing?.diamondCostingsMap?[data[i]['diamondType']],
           partType: data[i]['partType'],
           diamondType: data[i]['diamondType'],
-          onChanged: (charges, diamongCosting) {
+          onChanged: (charges, diamondCosting) {
             onChangesDiamondRow(
               data[i]['chargeType'],
               charges,
-              diamongCosting,
+              diamondCosting,
             );
           },
         ),
@@ -398,58 +403,4 @@ class HomeScreenState extends ConsumerState<HomeScreen> {
       "itemType": SagadiItemType.valiya,
     },
   ];
-}
-
-class SingleInputRow extends StatefulWidget {
-  final String labelText;
-  final String suffixText;
-  final TextEditingController? controller;
-  final double? Function(double) onChanged;
-
-  const SingleInputRow({
-    super.key,
-    required this.labelText,
-    required this.onChanged,
-    this.controller,
-    this.suffixText = inrSymbol,
-  });
-
-  @override
-  State<SingleInputRow> createState() => _SingleInputRowState();
-}
-
-class _SingleInputRowState extends State<SingleInputRow> {
-  double charges = 0;
-  String selectedValue = "";
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        MyTextField(
-          labelText: widget.labelText,
-          suffixText: widget.suffixText,
-          controller: widget.controller,
-          labelPadding: 4,
-          onChanged: (value) {
-            selectedValue = value;
-            updateState();
-          },
-        ),
-        const Text(" = "),
-        MyAnswer(
-          answer: charges,
-        ),
-        const SizedBox(
-          height: 24,
-        ),
-      ],
-    );
-  }
-
-  void updateState() {
-    double charges = double.tryParse(selectedValue) ?? 0;
-    setState(() {
-      this.charges = widget.onChanged(charges) ?? charges;
-    });
-  }
 }

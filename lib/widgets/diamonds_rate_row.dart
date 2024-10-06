@@ -8,14 +8,14 @@ import 'package:flutter/material.dart';
 class DiamondsRateRow extends StatefulWidget {
   final PartType partType;
   final DiamondType diamondType;
-  // final DiamondCosting diamondCosting;
+  final DiamondCosting? diamondCosting;
   final void Function(double, DiamondCosting) onChanged;
   const DiamondsRateRow({
     super.key,
     required this.partType,
     required this.diamondType,
     required this.onChanged,
-    // required this.diamondCosting,
+    this.diamondCosting,
   });
 
   @override
@@ -35,7 +35,7 @@ class _DiamondsRateRowState extends State<DiamondsRateRow> {
     DiamondType.dmc: "dmc ડાયમંડ",
   };
 
-  static int n = 100;
+  static double n = 100;
   late final TextEditingController diamondsPerElementController;
   late final TextEditingController elementsCountController;
   late final TextEditingController diamondsRateController;
@@ -44,9 +44,13 @@ class _DiamondsRateRowState extends State<DiamondsRateRow> {
   @override
   void initState() {
     super.initState();
-    diamondsPerElementController = TextEditingController();
-    elementsCountController = TextEditingController();
-    diamondsRateController = TextEditingController();
+    diamondsPerElementController = TextEditingController(
+        text: widget.diamondCosting?.diamondsPerPart.toString());
+    elementsCountController = TextEditingController(
+        text: widget.diamondCosting?.diamondsPerPart.toString());
+    diamondsRateController = TextEditingController(
+      text: (widget.diamondCosting?.diamondRate.toString()),
+    );
   }
 
   @override
@@ -55,13 +59,13 @@ class _DiamondsRateRowState extends State<DiamondsRateRow> {
       children: [
         MyTextField(
           labelText:
-              'એક ${partNameMap[widget.partType]} માં ${widget.diamondType}',
+              'એક ${partNameMap[widget.partType]} માં ${diamondNameMap[widget.diamondType]} ની સંખ્યા',
           onChanged: onChangedInput,
           controller: diamondsPerElementController,
         ),
         const Text(" x "),
         MyTextField(
-          labelText: '${widget.partType} ની સંખ્યા',
+          labelText: '${partNameMap[widget.partType]} ની સંખ્યા',
           onChanged: onChangedInput,
           controller: elementsCountController,
         ),
@@ -89,12 +93,13 @@ class _DiamondsRateRowState extends State<DiamondsRateRow> {
       totalSum = (diamondsPerElement * elementsCount * oneDiamondsRate);
     });
     widget.onChanged(
-        totalSum,
-        DiamondCosting(
-            diamondType: widget.diamondType,
-            diamondRate: oneDiamondsRate,
-            diamondsPerPart: diamondsPerElement,
-            numbersOfPartsPerSari: elementsCount,
-            partType: widget.partType));
+      totalSum,
+      DiamondCosting(
+          diamondType: widget.diamondType,
+          diamondRate: oneDiamondsRate,
+          diamondsPerPart: diamondsPerElement,
+          numbersOfPartsPerSari: elementsCount,
+          partType: widget.partType),
+    );
   }
 }

@@ -8,12 +8,14 @@ import 'package:flutter/material.dart';
 class SagadiInputField extends StatefulWidget {
   final String labelText;
   final SagadiItemType itemType;
+  final SagadiCosting? sagadiCosting;
   final void Function(double, SagadiCosting) onChanged;
   const SagadiInputField({
     super.key,
     required this.labelText,
     required this.onChanged,
     required this.itemType,
+    this.sagadiCosting,
   });
 
   @override
@@ -27,9 +29,18 @@ class _SagadiInputFieldState extends State<SagadiInputField> {
     SagadiItemType.valiya: 'valiya',
   };
 
-  TextEditingController elementsCountController = TextEditingController();
-  TextEditingController oneElementRateController = TextEditingController();
+  late final TextEditingController elementsCountController;
+  late final TextEditingController oneElementRateController;
   double totalSum = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    elementsCountController = TextEditingController(
+        text: widget.sagadiCosting?.itemsCount.toString());
+    oneElementRateController = TextEditingController(
+        text: widget.sagadiCosting?.chargePerItem.toString());
+  }
 
   @override
   Widget build(BuildContext context) {

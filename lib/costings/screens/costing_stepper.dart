@@ -53,6 +53,7 @@ class _StepperState extends ConsumerState<CostingStepper> {
         imageUrl: widget.costing!.imageUrl,
         designNo: widget.costing!.designNo,
       );
+      costing = widget.costing;
     }
   }
 

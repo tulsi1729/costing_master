@@ -18,11 +18,12 @@ class SingleInputRow extends StatefulWidget {
   });
 
   @override
-  State<SingleInputRow> createState() => _SingleInputRowState();
+  State<SingleInputRow> createState() => SingleInputRowState();
 }
 
-class _SingleInputRowState extends State<SingleInputRow> {
+class SingleInputRowState extends State<SingleInputRow> {
   double charges = 0;
+  String selectedValue = "";
   @override
   Widget build(BuildContext context) {
     return Row(
@@ -33,19 +34,25 @@ class _SingleInputRowState extends State<SingleInputRow> {
           controller: widget.controller,
           labelPadding: 4,
           onChanged: (value) {
-            // log("on changed ${widget.labelText} => $value", name: 'Angular');
-            double charges = double.tryParse(value) ?? 0;
-            setState(() {
-              this.charges = widget.onChanged(charges) ?? charges;
-            });
+            selectedValue = value;
+            updateState();
           },
         ),
         const Text(" = "),
-        MyAnswer(answer: charges),
+        MyAnswer(
+          answer: charges,
+        ),
         const SizedBox(
           height: 24,
-        )
+        ),
       ],
     );
+  }
+
+  void updateState() {
+    double charges = double.tryParse(selectedValue) ?? 0;
+    setState(() {
+      this.charges = widget.onChanged(charges) ?? charges;
+    });
   }
 }

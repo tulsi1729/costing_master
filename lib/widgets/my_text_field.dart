@@ -34,7 +34,8 @@ class MyTextField extends StatelessWidget {
                   padding: EdgeInsets.all(labelPadding),
                   child: Text(
                     labelText,
-                    style: const TextStyle(fontSize: 18, height: 0.9),
+                    // style: const TextStyle(fontSize: 18, height: 0.9),
+                    style: const TextStyle(fontSize: 12, height: 0.9),
                   ),
                 ),
               ),
