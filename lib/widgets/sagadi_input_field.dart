@@ -33,6 +33,23 @@ class _SagadiInputFieldState extends State<SagadiInputField> {
   late final TextEditingController oneElementRateController;
   double totalSum = 0;
 
+  
+   void onChangedInput(String _) {
+    double elementsCount = double.tryParse(elementsCountController.text) ?? 0;
+    double oneElementRate = double.tryParse(oneElementRateController.text) ?? 0;
+
+    setState(() {
+      totalSum = elementsCount * oneElementRate;
+    });
+    widget.onChanged(
+        totalSum,
+        SagadiCosting(
+          itemType: widget.itemType,
+          itemsCount: elementsCount,
+          chargePerItem: oneElementRate,
+        ));
+  }
+
   @override
   void initState() {
     super.initState();
@@ -41,6 +58,7 @@ class _SagadiInputFieldState extends State<SagadiInputField> {
     oneElementRateController = TextEditingController(
         text: widget.sagadiCosting?.chargePerItem.toString());
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -64,19 +82,5 @@ class _SagadiInputFieldState extends State<SagadiInputField> {
     );
   }
 
-  void onChangedInput(String _) {
-    double elementsCount = double.tryParse(elementsCountController.text) ?? 0;
-    double oneElementRate = double.tryParse(oneElementRateController.text) ?? 0;
-
-    setState(() {
-      totalSum = elementsCount * oneElementRate;
-    });
-    widget.onChanged(
-        totalSum,
-        SagadiCosting(
-          itemType: widget.itemType,
-          itemsCount: elementsCount,
-          chargePerItem: oneElementRate,
-        ));
-  }
+ 
 }

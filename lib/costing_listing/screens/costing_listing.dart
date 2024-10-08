@@ -1,17 +1,17 @@
 import 'package:costing_master/common/extension/async_value.dart';
-import 'package:costing_master/costing/notifier/costing_notifier.dart';
+import 'package:costing_master/costings/notifier/costings_notifier.dart';
 import 'package:costing_master/costings/screens/costing_stepper.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class CostingListing extends ConsumerStatefulWidget {
   final String clientName;
-  final String clientUid;
+  final String clientGuid;
 
   const CostingListing({
     super.key,
     required this.clientName,
-    required this.clientUid,
+    required this.clientGuid,
   });
 
   @override
@@ -21,7 +21,7 @@ class CostingListing extends ConsumerStatefulWidget {
 class _CostingListingState extends ConsumerState<CostingListing> {
   @override
   Widget build(BuildContext context) {
-    return ref.watch(costingProvider).whenWidget(
+    return ref.watch(costingsProvider).whenWidget(
           (costings) => Scaffold(
             appBar: AppBar(
               title: Text(widget.clientName),
@@ -37,7 +37,7 @@ class _CostingListingState extends ConsumerState<CostingListing> {
                       MaterialPageRoute(
                         builder: (context) => CostingStepper(
                           clientName: widget.clientName,
-                          clientUid: widget.clientUid,
+                          clientGuid: costing.clientGuid,
                           costing: costing,
                         ),
                       ),
@@ -58,7 +58,7 @@ class _CostingListingState extends ConsumerState<CostingListing> {
                   MaterialPageRoute(
                     builder: (context) => CostingStepper(
                       clientName: widget.clientName,
-                      clientUid: widget.clientUid,
+                      clientGuid: widget.clientGuid,
                     ),
                   ),
                 );

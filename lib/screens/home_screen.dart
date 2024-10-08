@@ -21,7 +21,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 class HomeScreen extends ConsumerStatefulWidget {
   final String clientName;
   final String costingGUID;
-  final String clientUid;
+  final String clientGuid;
   final InfoModel info;
   final Costing? costing;
 
@@ -32,7 +32,7 @@ class HomeScreen extends ConsumerStatefulWidget {
     required this.clientName,
     required this.costingGUID,
     required this.info,
-    required this.clientUid,
+    required this.clientGuid,
     required this.costingUpdate,
     required this.costing,
   });
@@ -90,7 +90,7 @@ class HomeScreenState extends ConsumerState<HomeScreen> {
       Costing(
         guid: widget.costingGUID,
         createdBy: userModel.uid,
-        clientUid: widget.clientUid,
+        clientGuid: widget.clientGuid,
         sariName: widget.info.sariName,
         imageUrl: widget.info.imageUrl,
         sheetBharvana: chargesMap[ChargeType.sheetCharges]!,
@@ -128,6 +128,8 @@ class HomeScreenState extends ConsumerState<HomeScreen> {
             child: Column(
               children: [
                 ..._buildDiamondInputRows(_singleInputDiamondList),
+                const MyDivider(),
+
                 ..._buildSagadiInputRows(_sagadiInputData),
                 const MyDivider(),
                 ..._buildSingleInputRows(_singleInputChargesList),
@@ -273,7 +275,7 @@ class HomeScreenState extends ConsumerState<HomeScreen> {
       rows.add(
         SagadiInputField(
             sagadiCosting:
-                widget.costing?.sagadiCostingsMap?[data[i]['inputType']],
+                widget.costing?.sagadiCostingsMap?[data[i]['itemType']],
             itemType: data[i]["itemType"],
             labelText: data[i]['labelText'],
             onChanged: (charges, sagadiCosting) {

@@ -2,6 +2,7 @@ import 'dart:developer';
 
 import 'package:costing_master/costing/notifier/costing_notifier.dart';
 import 'package:costing_master/costing_listing/screens/costing_listing.dart';
+import 'package:costing_master/costings/notifier/costings_notifier.dart';
 import 'package:costing_master/loading/loading_notifier.dart';
 import 'package:costing_master/model/costing.dart';
 import 'package:costing_master/model/info_model.dart';
@@ -14,13 +15,13 @@ import 'package:uuid/uuid.dart';
 
 class CostingStepper extends ConsumerStatefulWidget {
   final String clientName;
-  final String clientUid;
+  final String clientGuid;
   final Costing? costing;
 
   const CostingStepper({
     super.key,
     required this.clientName,
-    required this.clientUid,
+    required this.clientGuid,
     this.costing,
   });
 
@@ -139,11 +140,12 @@ class _StepperState extends ConsumerState<CostingStepper> {
                               await HomeScreenGlobalKey.currentState!
                                   .saveCostingModelToParent();
 
-                              await ref
+                              final create = await ref
                                   .read(costingProvider.notifier)
                                   .createCosting(costing!);
+                                  log("created              $create");
                               await ref
-                                  .read(costingProvider.notifier)
+                                  .read(costingsProvider.notifier)
                                   .refresh();
                             }
                             controlsDetails.onStepContinue!();
@@ -160,7 +162,7 @@ class _StepperState extends ConsumerState<CostingStepper> {
                           MaterialPageRoute(
                             builder: (context) => CostingListing(
                               clientName: widget.clientName,
-                              clientUid: widget.clientUid,
+                              clientGuid: widget.clientGuid,
                             ),
                           ),
                         );
@@ -204,12 +206,12 @@ class _StepperState extends ConsumerState<CostingStepper> {
               : HomeScreen(
                   key: HomeScreenGlobalKey,
                   clientName: widget.clientName,
-                  clientUid: widget.clientUid,
+                  clientGuid: widget.clientGuid,
                   costingGUID: costingGUID,
                   info: info!,
                   costingUpdate: (Costing costing) {
                     this.costing = costing;
-                    log("this costing ${this.costing}");
+                    log("this costing  stepper home ${this.costing}");
                   },
                   costing: costing,
                 ),

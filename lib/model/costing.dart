@@ -10,7 +10,7 @@ class Costing {
   String guid;
   String createdBy;
   int? designNo;
-  String clientUid;
+  String clientGuid;
   String sariName;
   String imageUrl;
   double sheetBharvana;
@@ -28,7 +28,7 @@ class Costing {
     required this.guid,
     required this.createdBy,
     this.designNo,
-    required this.clientUid,
+    required this.clientGuid,
     required this.sariName,
     required this.imageUrl,
     required this.sheetBharvana,
@@ -47,7 +47,7 @@ class Costing {
     String? guid,
     String? createdBy,
     int? designNo,
-    String? clientUid,
+    String? clientGuid,
     String? sariName,
     String? imageUrl,
     double? sheetBharvana,
@@ -65,7 +65,7 @@ class Costing {
       guid: guid ?? this.guid,
       createdBy: createdBy ?? this.createdBy,
       designNo: designNo ?? this.designNo,
-      clientUid: clientUid ?? this.clientUid,
+      clientGuid: clientGuid ?? this.clientGuid,
       sariName: sariName ?? this.sariName,
       imageUrl: imageUrl ?? this.imageUrl,
       sheetBharvana: sheetBharvana ?? this.sheetBharvana,
@@ -86,7 +86,7 @@ class Costing {
       'guid': guid,
       'createdBy': createdBy,
       'designNo': designNo,
-      'clientUid': clientUid,
+      'clientGuid': clientGuid,
       'sariName': sariName,
       'imageUrl': imageUrl,
       'sheetBharvana': sheetBharvana,
@@ -111,7 +111,7 @@ class Costing {
       guid: map['guid'] as String,
       createdBy: map['createdBy'] as String,
       designNo: map['designNo'] != null ? map['designNo'] as int : null,
-      clientUid: map['clientUid'] as String,
+      clientGuid: map['clientGuid'] as String,
       sariName: map['sariName'] as String,
       imageUrl: map['imageUrl'] as String,
       sheetBharvana: map['sheetBharvana'] as double,
@@ -138,7 +138,7 @@ class Costing {
 
   @override
   String toString() {
-    return 'Costing(guid: $guid, createdBy: $createdBy, designNo: $designNo, clientUid: $clientUid, sariName: $sariName, imageUrl: $imageUrl, sheetBharvana: $sheetBharvana, lessFiting: $lessFiting, reniyaCutting: $reniyaCutting, fusing: $fusing, dieKapvana: $dieKapvana, otherCost: $otherCost, vatavPercentage: $vatavPercentage, profitPercentage: $profitPercentage, diamondCostingsMap: $diamondCostingsMap, sagadiCostingsMap: $sagadiCostingsMap)';
+    return 'Costing(guid: $guid, createdBy: $createdBy, designNo: $designNo, clientGuid: $clientGuid, sariName: $sariName, imageUrl: $imageUrl, sheetBharvana: $sheetBharvana, lessFiting: $lessFiting, reniyaCutting: $reniyaCutting, fusing: $fusing, dieKapvana: $dieKapvana, otherCost: $otherCost, vatavPercentage: $vatavPercentage, profitPercentage: $profitPercentage, diamondCostingsMap: $diamondCostingsMap, sagadiCostingsMap: $sagadiCostingsMap)';
   }
 
   @override
@@ -148,7 +148,7 @@ class Costing {
     return other.guid == guid &&
         other.createdBy == createdBy &&
         other.designNo == designNo &&
-        other.clientUid == clientUid &&
+        other.clientGuid == clientGuid &&
         other.sariName == sariName &&
         other.imageUrl == imageUrl &&
         other.sheetBharvana == sheetBharvana &&
@@ -168,7 +168,7 @@ class Costing {
     return guid.hashCode ^
         createdBy.hashCode ^
         designNo.hashCode ^
-        clientUid.hashCode ^
+        clientGuid.hashCode ^
         sariName.hashCode ^
         imageUrl.hashCode ^
         sheetBharvana.hashCode ^
@@ -226,10 +226,8 @@ class Costing {
     Map<String, dynamic> sagadiCostingMap = {};
 
     dynamicMap.forEach((key, value) {
-      if (value is Map<String, dynamic>) {
         dynamic costing = value.toMap();
         sagadiCostingMap[value.itemType.toString()] = costing;
-      }
     });
 
     return sagadiCostingMap;

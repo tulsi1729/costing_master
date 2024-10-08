@@ -16,11 +16,11 @@ class ClientRepository {
 
   Future<bool> createClient(Client client) async {
     try {
-      final clientDoc = await _clients.doc(client.uid).get();
+      final clientDoc = await _clients.doc(client.guid).get();
       if (clientDoc.exists) {
         throw 'Client with the same name already exists!';
       }
-      await _clients.doc(client.uid).set(client.toMap());
+      await _clients.doc(client.guid).set(client.toMap());
       return true;
     } catch (e) {
       return false;

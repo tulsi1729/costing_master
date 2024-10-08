@@ -4,6 +4,7 @@ import 'package:costing_master/auth/notifiers/auth_notifier.dart';
 import 'package:costing_master/auth/screens/login.dart';
 import 'package:costing_master/client/notifier/client_notifier.dart';
 import 'package:costing_master/common/extension/async_value.dart';
+import 'package:costing_master/costing/notifier/selected_client_notifier.dart';
 import 'package:costing_master/costing_listing/screens/costing_listing.dart';
 import 'package:costing_master/model/client.dart';
 import 'package:costing_master/model/user_model.dart';
@@ -69,12 +70,14 @@ class _CreateNewClientState extends ConsumerState<ClientListing> {
                       ),
                     ),
                     onTap: () {
+                      // ref.read(selectedClientProvider.notifier).set(client.guid);
                       Navigator.push(
                         context,
                         MaterialPageRoute(
                           builder: (context) => CostingListing(
+                            
                             clientName: client.name,
-                            clientUid: client.uid,
+                            clientGuid: client.guid,
                           ),
                         ),
                       );

@@ -22,6 +22,10 @@ class CostingsRepository {
           'createdBy',
           isEqualTo: createdBy,
         )
+        // .where(
+        //   'clientGuid',
+        //   isEqualTo: clientGuid,
+        // )
         .snapshots()
         .map((event) {
       List<Costing> costings = [];
@@ -41,7 +45,7 @@ class CostingsRepository {
 
   Future<bool> createCosting(Costing costing) async {
     try {
-      log("before craete        ${costing.toMap()}");
+      log("before create        ${costing.toMap()}");
 
       await _costings.doc(costing.guid).set(costing.toMap());
 
