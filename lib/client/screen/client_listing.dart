@@ -1,11 +1,9 @@
-import 'dart:developer';
-
 import 'package:costing_master/auth/notifiers/auth_notifier.dart';
 import 'package:costing_master/auth/screens/login.dart';
 import 'package:costing_master/client/notifier/client_notifier.dart';
 import 'package:costing_master/common/extension/async_value.dart';
-import 'package:costing_master/costing/notifier/selected_client_notifier.dart';
-import 'package:costing_master/costing_listing/screens/costing_listing.dart';
+import 'package:costing_master/costings/notifier/selected_client_notifier.dart';
+import 'package:costing_master/costings/screens/costing_listing.dart';
 import 'package:costing_master/model/client.dart';
 import 'package:costing_master/model/user_model.dart';
 import 'package:flutter/material.dart';
@@ -70,12 +68,11 @@ class _CreateNewClientState extends ConsumerState<ClientListing> {
                       ),
                     ),
                     onTap: () {
-                      // ref.read(selectedClientProvider.notifier).set(client.guid);
+                      ref.read(selectedClientProvider.notifier).set(client);
                       Navigator.push(
                         context,
                         MaterialPageRoute(
                           builder: (context) => CostingListing(
-                            
                             clientName: client.name,
                             clientGuid: client.guid,
                           ),
@@ -123,15 +120,13 @@ class _CreateNewClientState extends ConsumerState<ClientListing> {
                                       name: clientNameController.text,
                                       createdBy: userModel.uid,
                                     );
-                                    final client = await ref
-                                        .read(clientsProvider.notifier)
-                                        .createClient(newClient);
-                                    log("client saved  ${client.toString()}");
                                     await ref
                                         .read(clientsProvider.notifier)
-                                        .refresh()
-                                        .then(
-                                            (value) => Navigator.pop(context));
+                                        .createClient(newClient);
+                                    await ref
+                                        .read(clientsProvider.notifier)
+                                        .refresh();
+                                    Navigator.pop(context);
                                   },
                                   child: const Text("Save Party"),
                                 ),

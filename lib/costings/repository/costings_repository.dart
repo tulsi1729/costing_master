@@ -16,16 +16,17 @@ class CostingsRepository {
   CostingsRepository({required FirebaseFirestore firestore})
       : _firestore = firestore;
 
-  Future<List<Costing>> getUserCostings(String createdBy) async {
+  Future<List<Costing>> getUserCostings1(
+      String createdBy, String clientGuid) async {
     final Stream<List<Costing>> costingsStream = _costings
         .where(
           'createdBy',
           isEqualTo: createdBy,
         )
-        // .where(
-        //   'clientGuid',
-        //   isEqualTo: clientGuid,
-        // )
+        .where(
+          'clientGuid',
+          isEqualTo: clientGuid,
+        )
         .snapshots()
         .map((event) {
       List<Costing> costings = [];
@@ -43,15 +44,30 @@ class CostingsRepository {
     return costings;
   }
 
+  Future<List<Costing>> getUserCostings(
+      String createdBy, String clientGuid) async {
+    try {
+      final QuerySnapshot event = await _costings
+          .where('createdBy', isEqualTo: createdBy)
+          .where('clientGuid', isEqualTo: clientGuid)
+          .get();
+
+      return event.docs.map((doc) {
+        return Costing.fromMap(doc.data() as Map<String, dynamic>);
+      }).toList();
+    } catch (e) {
+      // Handle errors here
+      log('Error fetching costings: $e');
+      return []; // Return an empty list in case of error
+    }
+  }
+
   Future<bool> createCosting(Costing costing) async {
     try {
-      log("before create        ${costing.toMap()}");
-
       await _costings.doc(costing.guid).set(costing.toMap());
-
       return true;
     } catch (e) {
-      log(e.toString(), name: "costing repository craete costing");
+      log(e.toString(), name: "costing repository create costing");
       return false;
     }
   }

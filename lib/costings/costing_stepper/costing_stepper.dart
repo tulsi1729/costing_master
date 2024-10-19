@@ -1,14 +1,14 @@
-import 'dart:developer';
-
-import 'package:costing_master/costing/notifier/costing_notifier.dart';
-import 'package:costing_master/costing_listing/screens/costing_listing.dart';
+import 'package:costing_master/costings/notifier/costing_notifier.dart';
+import 'package:costing_master/costings/screens/costing_listing.dart';
 import 'package:costing_master/costings/notifier/costings_notifier.dart';
+import 'package:costing_master/costings/screens/costing_listing_tile.dart';
 import 'package:costing_master/loading/loading_notifier.dart';
 import 'package:costing_master/model/costing.dart';
 import 'package:costing_master/model/info_model.dart';
-import 'package:costing_master/screens/home_screen.dart';
-import 'package:costing_master/screens/info_screen.dart';
-import 'package:costing_master/screens/preview.dart';
+import 'package:costing_master/model/preview_model.dart';
+import 'package:costing_master/costings/costing_stepper/info_screen.dart';
+import 'package:costing_master/costings/costing_stepper/preview_screen.dart';
+import 'package:costing_master/costings/costing_stepper/costing_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
@@ -31,7 +31,7 @@ class CostingStepper extends ConsumerStatefulWidget {
 
 class _StepperState extends ConsumerState<CostingStepper> {
   GlobalKey<InfoState> globalKey = GlobalKey();
-  GlobalKey<HomeScreenState> HomeScreenGlobalKey = GlobalKey();
+  GlobalKey<CostingScreenState> costingScreenState = GlobalKey();
 
   int currentStep = 0;
   bool isCompleted = false;
@@ -133,17 +133,15 @@ class _StepperState extends ConsumerState<CostingStepper> {
                         ? null
                         : () async {
                             ref.read(loadingProvider.notifier).set(true);
-                            if (HomeScreenGlobalKey.currentState == null) {
-                              log("currentstate null ${HomeScreenGlobalKey.currentState.toString()}");
-                            } else if (HomeScreenGlobalKey.currentState !=
+                            if (costingScreenState.currentState == null) {
+                            } else if (costingScreenState.currentState !=
                                 null) {
-                              await HomeScreenGlobalKey.currentState!
+                              await costingScreenState.currentState!
                                   .saveCostingModelToParent();
 
-                              final create = await ref
+                              await ref
                                   .read(costingProvider.notifier)
                                   .createCosting(costing!);
-                                  log("created              $create");
                               await ref
                                   .read(costingsProvider.notifier)
                                   .refresh();
@@ -203,15 +201,14 @@ class _StepperState extends ConsumerState<CostingStepper> {
           title: const Text("Costing"),
           content: info == null
               ? Container()
-              : HomeScreen(
-                  key: HomeScreenGlobalKey,
+              : CostingScreen(
+                  key: costingScreenState,
                   clientName: widget.clientName,
                   clientGuid: widget.clientGuid,
                   costingGUID: costingGUID,
                   info: info!,
                   costingUpdate: (Costing costing) {
                     this.costing = costing;
-                    log("this costing  stepper home ${this.costing}");
                   },
                   costing: costing,
                 ),
@@ -220,9 +217,13 @@ class _StepperState extends ConsumerState<CostingStepper> {
           state: currentStep > 2 ? StepState.complete : StepState.indexed,
           isActive: currentStep >= 2,
           title: const Text("Preview"),
-          content: Preview(
-            info: info,
-          ),
+          content: costing == null
+              ? Container()
+              : Preview(
+                  previewModel: PreviewModel(
+                      costing: costing!, clientName: widget.clientName),
+                  costing: costing,
+                  clientName: widget.clientName),
         ),
       ];
 }

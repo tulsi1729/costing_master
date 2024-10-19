@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:costing_master/common/enums.dart';
 import 'package:costing_master/constants.dart';
 import 'package:costing_master/model/diamond_costing.dart';
@@ -44,13 +46,25 @@ class _DiamondsRateRowState extends State<DiamondsRateRow> {
   @override
   void initState() {
     super.initState();
+    String? diamondRate = widget.diamondCosting?.diamondRate == null
+        ? null
+        : (widget.diamondCosting?.diamondRate ?? 0 * n).toString();
     diamondsPerElementController = TextEditingController(
         text: widget.diamondCosting?.diamondsPerPart.toString());
     elementsCountController = TextEditingController(
-        text: widget.diamondCosting?.diamondsPerPart.toString());
-    diamondsRateController = TextEditingController(
-      text: (widget.diamondCosting?.diamondRate.toString()),
-    );
+        text: widget.diamondCosting?.numbersOfPartsPerSari.toString());
+
+    diamondsRateController = TextEditingController(text: diamondRate);
+
+    if (widget.diamondCosting == null) {
+      null;
+    } else {
+      totalSum = (widget.diamondCosting!.diamondsPerPart *
+          widget.diamondCosting!.numbersOfPartsPerSari *
+          widget.diamondCosting!.diamondRate);
+    }
+
+    log(widget.diamondCosting.toString(), name: "init rate row");
   }
 
   @override
@@ -87,7 +101,7 @@ class _DiamondsRateRowState extends State<DiamondsRateRow> {
         int.tryParse(diamondsPerElementController.text) ?? 0;
     double elementsCount = double.tryParse(elementsCountController.text) ?? 0;
     double oneDiamondsRate =
-        (double.tryParse(diamondsRateController.text) ?? 0) / n;
+        (double.tryParse(diamondsRateController.text) ?? 0 / n);
 
     setState(() {
       totalSum = (diamondsPerElement * elementsCount * oneDiamondsRate);

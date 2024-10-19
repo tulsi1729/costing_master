@@ -31,7 +31,7 @@ class InfoState extends ConsumerState<InfoScreen> {
   late final TextEditingController designNoController;
 
   String sariName = '';
-  String designNo = "0";
+  String designNo = '';
   final ImagePicker _picker = ImagePicker();
   String? url;
   UploadTask? uploadTask;
@@ -65,7 +65,7 @@ class InfoState extends ConsumerState<InfoScreen> {
     super.initState();
     sariNameController = TextEditingController(text: widget.info?.sariName);
     designNoController =
-        TextEditingController(text: widget.info?.designNo.toString() ?? "");
+        TextEditingController(text: widget.info?.designNo.toString() ?? '0');
     url = widget.info?.imageUrl;
   }
 

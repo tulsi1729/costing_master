@@ -19,9 +19,13 @@ class Costing {
   double fusing;
   double dieKapvana;
   double otherCost;
-  double vatavPercentage;
-  double profitPercentage;
-  Map<DiamondType, DiamondCosting>? diamondCostingsMap;
+  double? vatavPercentage;
+  double? profitPercentage;
+  double totalExpense;
+  double totalChargesPlusVatavAmount;
+  double totalChargesPlusVatavPlusProfit;
+
+  Map<PartType, Map<DiamondType, DiamondCosting>>? diamondCostingsMap;
   Map<SagadiItemType, SagadiCosting>? sagadiCostingsMap;
 
   Costing({
@@ -41,6 +45,9 @@ class Costing {
     required this.profitPercentage,
     required this.diamondCostingsMap,
     required this.sagadiCostingsMap,
+    required this.totalExpense,
+    required this.totalChargesPlusVatavAmount,
+    required this.totalChargesPlusVatavPlusProfit,
   });
 
   Costing copyWith({
@@ -58,7 +65,7 @@ class Costing {
     double? otherCost,
     double? vatavPercentage,
     double? profitPercentage,
-    Map<DiamondType, DiamondCosting>? diamondCostingsMap,
+    Map<PartType, Map<DiamondType, DiamondCosting>>? diamondCostingsMap,
     Map<SagadiItemType, SagadiCosting>? sagadiCostingsMap,
   }) {
     return Costing(
@@ -76,6 +83,9 @@ class Costing {
       otherCost: otherCost ?? this.otherCost,
       vatavPercentage: vatavPercentage ?? this.vatavPercentage,
       profitPercentage: profitPercentage ?? this.profitPercentage,
+      totalExpense: totalExpense,
+      totalChargesPlusVatavAmount: totalChargesPlusVatavAmount,
+      totalChargesPlusVatavPlusProfit: totalChargesPlusVatavPlusProfit,
       diamondCostingsMap: diamondCostingsMap ?? this.diamondCostingsMap,
       sagadiCostingsMap: sagadiCostingsMap ?? this.sagadiCostingsMap,
     );
@@ -97,6 +107,9 @@ class Costing {
       'otherCost': otherCost,
       'vatavPercentage': vatavPercentage,
       'profitPercentage': profitPercentage,
+      'totalExpense': totalExpense,
+      'totalChargesPlusVatavAmount': totalChargesPlusVatavAmount,
+      'totalChargesPlusVatavPlusProfit': totalChargesPlusVatavPlusProfit,
       'diamondCostingsMap': diamondCostingsMap == null
           ? null
           : _convertToStringDynamicDiamondMap(diamondCostingsMap!),
@@ -120,8 +133,20 @@ class Costing {
       fusing: map['fusing'] as double,
       dieKapvana: map['dieKapvana'] as double,
       otherCost: map['otherCost'] as double,
-      vatavPercentage: map['vatavPercentage'] as double,
-      profitPercentage: map['profitPercentage'] as double,
+      vatavPercentage: map['vatavPercentage'] != null
+          ? map['vatavPercentage'] as double
+          : null,
+      profitPercentage: map['profitPercentage'] != null
+          ? map['profitPercentage'] as double
+          : null,
+      totalExpense: map['totalExpense'] as double,
+      totalChargesPlusVatavAmount: map['totalChargesPlusVatavAmount'] != null
+          ? map['totalChargesPlusVatavAmount'] as double
+          : 0,
+      totalChargesPlusVatavPlusProfit:
+          map['totalChargesPlusVatavPlusProfit'] != null
+              ? map['totalChargesPlusVatavPlusProfit'] as double
+              : 0,
       diamondCostingsMap: map['diamondCostingsMap'] != null
           ? _convertToDiamondCostingMap(map['diamondCostingsMap'])
           : null,
@@ -195,30 +220,43 @@ class Costing {
     return sagadiCostingMap;
   }
 
-  static Map<DiamondType, DiamondCosting> _convertToDiamondCostingMap(
-      Map<String, dynamic> dynamicMap) {
-    Map<DiamondType, DiamondCosting> diamondCostingMap = {};
+  static Map<PartType, Map<DiamondType, DiamondCosting>>
+      _convertToDiamondCostingMap(Map<String, dynamic> dynamicMap) {
+    Map<PartType, Map<DiamondType, DiamondCosting>> mainDiamondCostingMap = {};
 
-    dynamicMap.forEach((key, value) {
-      if (value is Map<String, dynamic>) {
-        DiamondCosting costing = DiamondCosting.fromMap(value);
-        diamondCostingMap[costing.diamondType] = costing;
-      }
+    dynamicMap.forEach((partTypeKey, diamondCostingMap) {
+      Map<DiamondType, DiamondCosting> diamondCostingMap1 = {};
+      diamondCostingMap.forEach((diamondType, diamondCosting) {
+        DiamondCosting costing = DiamondCosting.fromMap(diamondCosting);
+        diamondCostingMap1[{
+          DiamondType.dmc.name: DiamondType.dmc,
+          DiamondType.shadow.name: DiamondType.shadow,
+          DiamondType.color.name: DiamondType.color,
+          DiamondType.jarkan.name: DiamondType.jarkan,
+        }[diamondType]!] = costing;
+      });
+      mainDiamondCostingMap[{
+        PartType.patti.name: PartType.patti,
+        PartType.buta.name: PartType.buta,
+      }[partTypeKey]!] = diamondCostingMap1;
     });
 
-    return diamondCostingMap;
+    return mainDiamondCostingMap;
   }
 
   static Map<String, dynamic> _convertToStringDynamicDiamondMap(
-      Map<DiamondType, DiamondCosting> dynamicMap) {
-    Map<String, dynamic> diamondCostingMap = {};
+      Map<PartType, Map<DiamondType, DiamondCosting>> dynamicMap) {
+    Map<String, dynamic> mainDiamondCostingMap = {};
 
-    dynamicMap.forEach((key, value) {
-      dynamic costing = value.toMap();
-      diamondCostingMap[value.diamondType.toString()] = costing;
+    dynamicMap.forEach((partType, diamondCosting) {
+      Map<String, dynamic> diamondCostingMap = {};
+      diamondCosting.forEach((key, value) {
+        dynamic costing = value.toMap();
+        diamondCostingMap[value.diamondType.name] = costing;
+      });
+      mainDiamondCostingMap[partType.name] = diamondCostingMap;
     });
-
-    return diamondCostingMap;
+    return mainDiamondCostingMap;
   }
 
   static Map<String, dynamic> _convertToStringDynamicSagadiMap(
@@ -226,8 +264,8 @@ class Costing {
     Map<String, dynamic> sagadiCostingMap = {};
 
     dynamicMap.forEach((key, value) {
-        dynamic costing = value.toMap();
-        sagadiCostingMap[value.itemType.toString()] = costing;
+      dynamic costing = value.toMap();
+      sagadiCostingMap[value.itemType.toString()] = costing;
     });
 
     return sagadiCostingMap;

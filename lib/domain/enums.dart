@@ -16,4 +16,9 @@ enum ChargeType {
   fusing, //15
   dieKapvana, //16
   otherCharges, //17
+  totalCharges, // 18
+  vatavAmount, //19
+  totalChargesPlusVatavAmount, // 20
+  profitAmount, //21
+  totalChargesPlusVatavPlusProfit, // 22
 }
