@@ -7,7 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/rendering.dart';
 import 'dart:ui' as ui;
 import 'package:flutter/services.dart';
-import 'package:image_gallery_saver/image_gallery_saver.dart';
+import 'package:image_gallery_saver_plus/image_gallery_saver_plus.dart';
 
 class Preview extends ConsumerStatefulWidget {
   final Costing? costing;
@@ -44,7 +44,7 @@ class _PreviewState extends ConsumerState<Preview> {
       ByteData? byteData =
           await (image.toByteData(format: ui.ImageByteFormat.png));
       if (byteData != null) {
-        final result = await ImageGallerySaver.saveImage(
+        final result = await ImageGallerySaverPlus.saveImage(
             quality: 100, byteData.buffer.asUint8List());
       }
     }

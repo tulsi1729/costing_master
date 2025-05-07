@@ -4,7 +4,7 @@ import 'dart:developer';
 import 'dart:io';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:gallery_saver/gallery_saver.dart';
+// import 'package:gallery_saver/gallery_saver.dart';
 import 'package:image_picker/image_picker.dart';
 
 class InfoScreen extends ConsumerStatefulWidget {
@@ -55,8 +55,8 @@ class InfoState extends ConsumerState<InfoScreen> {
 
   Future<void> saveToGallery() async {
     if (_image != null) {
-      // Save the image
-      await GallerySaver.saveImage(_image!.path);
+      // Save the image TODO: fix following line
+      // await GallerySaver.saveImage(_image!.path);
     }
   }
 

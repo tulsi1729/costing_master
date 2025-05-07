@@ -6,8 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:gallery_saver/gallery_saver.dart';
-import 'package:image_gallery_saver/image_gallery_saver.dart';
+import 'package:image_gallery_saver_plus/image_gallery_saver_plus.dart';
 import 'package:image_picker/image_picker.dart';
 
 class PickImage extends ConsumerStatefulWidget {
@@ -73,7 +72,7 @@ class _PickImageState extends ConsumerState<PickImage> {
     ByteData? byteData =
         await (image.toByteData(format: ui.ImageByteFormat.png));
     if (byteData != null) {
-      final result = await ImageGallerySaver.saveImage(
+      final result = await ImageGallerySaverPlus.saveImage(
           quality: 100, byteData.buffer.asUint8List());
       log(result);
     }
@@ -81,8 +80,8 @@ class _PickImageState extends ConsumerState<PickImage> {
 
   Future<void> saveToGallery() async {
     if (_image != null) {
-      // Save the image
-      await GallerySaver.saveImage(_image!.path);
+      // Save the image TODO: fix following line
+      // await GallerySaver.saveImage(_image!.path);
     }
   }
 

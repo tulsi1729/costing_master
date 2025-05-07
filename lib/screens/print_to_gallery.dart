@@ -3,7 +3,7 @@ import 'package:flutter/rendering.dart';
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:image_gallery_saver/image_gallery_saver.dart';
+import 'package:image_gallery_saver_plus/image_gallery_saver_plus.dart';
 
 class PrintToGallery extends StatelessWidget {
   PrintToGallery({super.key});
@@ -17,7 +17,7 @@ class PrintToGallery extends StatelessWidget {
     ByteData? byteData =
         await (image.toByteData(format: ui.ImageByteFormat.png));
     if (byteData != null) {
-      final result = await ImageGallerySaver.saveImage(
+      final result = await ImageGallerySaverPlus.saveImage(
           quality: 100, byteData.buffer.asUint8List());
     }
   }
