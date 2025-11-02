@@ -9,7 +9,7 @@
       "client_info": {
         "mobilesdk_app_id": "1:996876103970:android:2ff3642d2f2b2ce9f3b57b",
         "android_client_info": {
-          "package_name": "com.example.costing_master"
+          "package_name": "com.rightdevs.costing_master"
         }
       },
       "oauth_client": [
@@ -17,7 +17,7 @@
           "client_id": "996876103970-blcur175gtt8s2ndlim3kbe32quarsac.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
-            "package_name": "com.example.costing_master",
+            "package_name": "com.rightdevs.costing_master",
             "certificate_hash": "965aa8878f5ea9272d191c62ab11f0401802f231"
           }
         },

@@ -1,4 +1,4 @@
-package com.example.costing_master
+package com.rightdevs.costing_master
 
 import io.flutter.embedding.android.FlutterActivity
 
