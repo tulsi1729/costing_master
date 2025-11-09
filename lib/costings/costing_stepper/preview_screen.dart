@@ -13,12 +13,14 @@ class Preview extends ConsumerStatefulWidget {
   final Costing? costing;
   final PreviewModel previewModel;
   final String clientName;
+  final bool isFromStepper;
 
   const Preview({
     super.key,
     required this.costing,
     required this.previewModel,
     required this.clientName,
+    this.isFromStepper = false,
   });
 
   @override
@@ -56,7 +58,7 @@ class _PreviewState extends ConsumerState<Preview> {
         tableRowWidgets.add(
           Table(
               border: TableBorder
-                  .all(), // Allows to add a border decoration around your table
+                  .all(),
               children: [
                 TableRow(children: [
                   Text(
@@ -134,8 +136,7 @@ class _PreviewState extends ConsumerState<Preview> {
                         ),
                       ),
                       Table(
-                        border: TableBorder
-                            .all(),
+                        border: TableBorder.all(),
                         children: const [
                           TableRow(children: [
                             Text('Items'),
@@ -153,10 +154,19 @@ class _PreviewState extends ConsumerState<Preview> {
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
                   ElevatedButton(
-                      onPressed: () {
-                        showPicker();
-                        if (mounted) {
-                          Navigator.pop(context);
+                      onPressed: () async {
+                        await showPicker();
+
+                        if (widget.isFromStepper) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text("Image saved to gallery"),
+                              duration: Duration(seconds: 2),
+                            ),
+                          );
+                        } else {
+                          if (mounted)
+                            Navigator.of(context, rootNavigator: true).pop();
                         }
                       },
                       child: const Text("SAVE IMAGE")),

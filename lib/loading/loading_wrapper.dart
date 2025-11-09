@@ -5,28 +5,24 @@ class LoadingWrapper extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.transparent,
-      body: Container(
-        color: Colors.black45,
+    return Positioned.fill(
+      child: Container(
+        color: Colors.black45, // dimmed background
         child: Center(
-          child: Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              boxShadow: const [BoxShadow()],
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: const Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                CircularProgressIndicator(),
-                SizedBox(
-                  width: 16,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: const [
+              CircularProgressIndicator(color: Colors.deepPurple),
+              SizedBox(height: 16),
+              Text(
+                "Loading...",
+                style: TextStyle(
+                  color: Colors.white, // visible on dark bg
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
                 ),
-                Text("Loading..."),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),

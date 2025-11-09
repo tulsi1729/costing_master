@@ -56,7 +56,6 @@ class _StepperState extends ConsumerState<CostingStepper> {
         designNo: widget.costing!.designNo,
       );
       costing = widget.costing;
-      // If editing existing costing, forms should be valid
       isInfoFormValid = widget.costing!.sariName.isNotEmpty && 
                        widget.costing!.imageUrl.isNotEmpty;
       isCostingFormValid = widget.costing!.totalExpense > 0;
@@ -123,7 +122,6 @@ class _StepperState extends ConsumerState<CostingStepper> {
               () => isCompleted = true,
             );
 
-            ///send data to server
           } else {
             setState(
               () => currentStep += 1,
@@ -132,20 +130,15 @@ class _StepperState extends ConsumerState<CostingStepper> {
         },
         onStepTapped: (int step) {
           if (isNavigationDisabled) return;
-          // Only allow navigation to steps that have been unlocked by clicking Next
-          // Steps are unlocked only when currentStep >= step (reached via Next button)
           if (step == currentStep) {
-            // Already on this step, do nothing
             return;
           }
           if (step < currentStep) {
-            // Going back to a previous unlocked step - always allowed
             setState(() {
               currentStep = step;
             });
             return;
           }
-          // Trying to access a future step - not allowed unless reached via Next button
           ScaffoldMessenger.of(context).hideCurrentSnackBar();
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -448,7 +441,8 @@ class _StepperState extends ConsumerState<CostingStepper> {
                   previewModel: PreviewModel(
                       costing: costing!, clientName: widget.clientName),
                   costing: costing,
-                  clientName: widget.clientName),
+                  clientName: widget.clientName,
+                   isFromStepper: true,),
           ),
         ),
       ];
