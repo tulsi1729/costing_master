@@ -135,7 +135,7 @@ class _PreviewState extends ConsumerState<Preview> {
                       ),
                       Table(
                         border: TableBorder
-                            .all(), // Allows to add a border decoration around your table
+                            .all(),
                         children: const [
                           TableRow(children: [
                             Text('Items'),
@@ -155,6 +155,9 @@ class _PreviewState extends ConsumerState<Preview> {
                   ElevatedButton(
                       onPressed: () {
                         showPicker();
+                        if (mounted) {
+                          Navigator.pop(context);
+                        }
                       },
                       child: const Text("SAVE IMAGE")),
                 ],

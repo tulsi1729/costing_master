@@ -263,13 +263,22 @@ class PreviewModel {
     );
     grandTotal += costing.totalExpense;
 
-    double vatavAmount =
-        (costing.totalExpense * (costing.vatavPercentage ?? 0)) / 100;
+    // double vatavAmount =
+    //     (costing.totalExpense * (costing.vatavPercentage ?? 0)) / 100;
+    // previewMap[ChargeType.vatavAmount] = PreviewTableRowModel(
+    //   title: "vatav",
+    //   charge: "$vatavAmount %",
+    //   totalCharge: costing.vatavPercentage.toString(),
+    // );
+    final vatavPercentage = costing.vatavPercentage ?? 0;
+    final vatavAmount = (costing.totalExpense * vatavPercentage) / 100;
+
     previewMap[ChargeType.vatavAmount] = PreviewTableRowModel(
-      title: "vatav",
-      charge: "$vatavAmount %",
-      totalCharge: costing.vatavPercentage.toString(),
+      title: "Vatav (${vatavPercentage.toStringAsFixed(2)}%)",
+      charge: vatavAmount.toStringAsFixed(2),
+      totalCharge: vatavAmount.toStringAsFixed(2),
     );
+
 
     double totalPlusVatav = costing.totalExpense + vatavAmount;
     previewMap[ChargeType.totalChargesPlusVatavAmount] = PreviewTableRowModel(
@@ -278,12 +287,22 @@ class PreviewModel {
       totalCharge: totalPlusVatav.toString(),
     );
 
-    double profitAmount = (grandTotal * (costing.profitPercentage ?? 0)) / 100;
+    // double profitAmount = (grandTotal * (costing.profitPercentage ?? 0)) / 100;
+    // previewMap[ChargeType.profitAmount] = PreviewTableRowModel(
+    //   title: "profit",
+    //   charge: "$profitAmount %",
+    //   totalCharge: costing.profitPercentage.toString(),
+    // );
+
+    final profitPercentage = costing.profitPercentage ?? 0;
+    final profitAmount = (grandTotal * profitPercentage) / 100;
+
     previewMap[ChargeType.profitAmount] = PreviewTableRowModel(
-      title: "profit",
-      charge: "$profitAmount %",
-      totalCharge: costing.profitPercentage.toString(),
+      title: "profit (${profitPercentage.toStringAsFixed(2)}%)",
+      charge: profitAmount.toStringAsFixed(2),
+      totalCharge: profitAmount.toStringAsFixed(2),
     );
+
 
     double totalPlusVatavPlusProfit =
         costing.totalExpense + vatavAmount + profitAmount;

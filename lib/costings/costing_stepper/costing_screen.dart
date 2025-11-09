@@ -24,6 +24,7 @@ class CostingScreen extends ConsumerStatefulWidget {
   final Costing? costing;
 
   final void Function(Costing) costingUpdate;
+  final void Function(bool)? setIsFormValid;
 
   const CostingScreen({
     super.key,
@@ -33,6 +34,7 @@ class CostingScreen extends ConsumerStatefulWidget {
     required this.clientGuid,
     required this.costingUpdate,
     required this.costing,
+    this.setIsFormValid,
   });
 
   @override
@@ -54,6 +56,23 @@ class CostingScreenState extends ConsumerState<CostingScreen> {
       GlobalKey<SingleInputRowState>();
   final GlobalKey<SingleInputRowState> _profitWidgetKey =
       GlobalKey<SingleInputRowState>();
+
+  bool _isFormValid() {
+    // Form is valid if totalExpense > 0, meaning at least some costing data has been entered
+    // This checks that user has filled at least one of:
+    // - Diamond charges (any type)
+    // - Sagadi charges (any type)  
+    // - Single input charges (sheet, fitting, cutting, fusing, die, other)
+    final bool hasData = totalExpense > 0;
+    
+    return hasData;
+  }
+
+  void _updateFormValidity() {
+    if (widget.setIsFormValid != null) {
+      widget.setIsFormValid!(_isFormValid());
+    }
+  }
 
   void logOut() {
     ref.read(authProvider.notifier).logOut();
@@ -119,6 +138,10 @@ class CostingScreenState extends ConsumerState<CostingScreen> {
     vatavPercentage = widget.costing?.vatavPercentage;
     profitPercentage = widget.costing?.profitPercentage;
     totalExpense = widget.costing?.totalExpense ?? 0;
+    // Update form validity after init
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _updateFormValidity();
+    });
   }
 
   @override
@@ -235,6 +258,7 @@ class CostingScreenState extends ConsumerState<CostingScreen> {
     _vatavWidgetKey.currentState?.updateState();
     _profitWidgetKey.currentState?.updateState();
     chargesMap[chargesType] = charges;
+    _updateFormValidity();
   }
 
   void onChangesDiamondRow(

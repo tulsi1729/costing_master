@@ -13,10 +13,41 @@ class SignInButton extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return Center(
-      child: ElevatedButton(
+    final colorScheme = Theme.of(context).colorScheme;
+    
+    return SizedBox(
+      width: double.infinity,
+      child: ElevatedButton.icon(
         onPressed: () => signINWithGoogle(context, ref),
-        child: const Text("Sign in Google"),
+        icon: Container(
+          padding: const EdgeInsets.all(6),
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.25),
+            borderRadius: BorderRadius.circular(6),
+          ),
+          child: const Icon(
+            Icons.login_rounded,
+            size: 24,
+          ),
+        ),
+        label: const Text(
+          "Sign in with Google",
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.w600,
+            letterSpacing: 0.5,
+          ),
+        ),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: colorScheme.primary,
+          foregroundColor: colorScheme.onPrimary,
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(18),
+          ),
+          elevation: 6,
+          shadowColor: colorScheme.primary.withOpacity(0.5),
+        ),
       ),
     );
   }

@@ -31,7 +31,7 @@ class MyApp extends ConsumerWidget {
               ? Stack(
                   children: [
                     const ClientListing(),
-                    isLoading ? const LoadingWrapper() : Container()
+                    isLoading ? const LoadingWrapper() : const SizedBox.shrink(),
                   ],
                 )
               : const LoginScreen(),
