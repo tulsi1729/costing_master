@@ -36,6 +36,7 @@ class CostingsNotifier extends AsyncNotifier<List<Costing>> {
     List<Costing> costings = await getCostings();
     state = AsyncValue.data(costings);
   }
+  
 }
 
 final costingsProvider = AsyncNotifierProvider<CostingsNotifier, List<Costing>>(

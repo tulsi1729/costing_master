@@ -41,6 +41,27 @@ class _StepperState extends ConsumerState<CostingStepper> {
   bool isInfoFormValid = false;
   bool isCostingFormValid = false;
 
+  // @override
+  // void initState() {
+  //   super.initState();
+  //   if (widget.costing == null) {
+  //     costingGUID = const Uuid().v4();
+  //   } else {
+  //     costingGUID = widget.costing!.guid;
+
+  //     info = InfoModel(
+  //       clientName: widget.clientName,
+  //       sariName: widget.costing!.sariName,
+  //       imageUrl: widget.costing!.imageUrl,
+  //       designNo: widget.costing!.designNo,
+  //     );
+  //     costing = widget.costing;
+  //     isInfoFormValid = widget.costing!.sariName.isNotEmpty &&
+  //                      widget.costing!.imageUrl.isNotEmpty;
+  //     isCostingFormValid = widget.costing!.totalExpense > 0;
+  //   }
+  // }
+
   @override
   void initState() {
     super.initState();
@@ -56,8 +77,11 @@ class _StepperState extends ConsumerState<CostingStepper> {
         designNo: widget.costing!.designNo,
       );
       costing = widget.costing;
-      isInfoFormValid = widget.costing!.sariName.isNotEmpty && 
-                       widget.costing!.imageUrl.isNotEmpty;
+
+      // Properly validate form fields for edit mode
+      isInfoFormValid = widget.costing!.sariName.trim().isNotEmpty &&
+          widget.costing!.imageUrl.isNotEmpty &&
+          widget.costing!.imageUrl != 'null';
       isCostingFormValid = widget.costing!.totalExpense > 0;
     }
   }
@@ -114,242 +138,283 @@ class _StepperState extends ConsumerState<CostingStepper> {
               steps: getSteps(),
               currentStep: currentStep,
               physics: const AlwaysScrollableScrollPhysics(),
-        onStepContinue: () {
-          final isLastStep = currentStep == getSteps().length - 1;
+              onStepContinue: () {
+                final isLastStep = currentStep == getSteps().length - 1;
 
-          if (isLastStep) {
-            setState(
-              () => isCompleted = true,
-            );
-
-          } else {
-            setState(
-              () => currentStep += 1,
-            );
-          }
-        },
-        onStepTapped: (int step) {
-          if (isNavigationDisabled) return;
-          if (step == currentStep) {
-            return;
-          }
-          if (step < currentStep) {
-            setState(() {
-              currentStep = step;
-            });
-            return;
-          }
-          ScaffoldMessenger.of(context).hideCurrentSnackBar();
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: const Row(
-                children: [
-                  Icon(
-                    Icons.block,
-                    color: Colors.white,
-                  ),
-                  SizedBox(width: 12),
-                  Expanded(
-                    child: Text(
-                      'Please use the Next button to proceed to the next step.',
-                      style: TextStyle(
-                        color: Colors.white,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              backgroundColor: Colors.orange,
-              behavior: SnackBarBehavior.floating,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
-              ),
-              margin: const EdgeInsets.all(16),
-              duration: const Duration(seconds: 3),
-            ),
-          );
-        },
-        onStepCancel: () {
-          currentStep == 0 ? null : setState(() => currentStep -= 1);
-        },
-        controlsBuilder: (context, controlsDetails) {
-          currentStep == getSteps().length - 1;
-
-          return Container(
-            margin: const EdgeInsets.only(top: 50, bottom: 20),
-            padding: const EdgeInsets.symmetric(horizontal: 8),
-            child: Row(
-              children: [
-                if (currentStep != 0)
-                  Expanded(
-                    child: OutlinedButton.icon(
-                      onPressed: () {
-                        controlsDetails.onStepCancel!();
-                      },
-                      icon: const Icon(Icons.arrow_back, size: 18),
-                      label: const Text("Back"),
-                      style: OutlinedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
+                if (isLastStep) {
+                  setState(
+                    () => isCompleted = true,
+                  );
+                } else {
+                  setState(
+                    () => currentStep += 1,
+                  );
+                }
+              },
+              onStepTapped: (int step) {
+                if (isNavigationDisabled) return;
+                if (step == currentStep) {
+                  return;
+                }
+                if (step < currentStep) {
+                  setState(() {
+                    currentStep = step;
+                  });
+                  return;
+                }
+                ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: const Row(
+                      children: [
+                        Icon(
+                          Icons.block,
+                          color: Colors.white,
                         ),
-                      ),
+                        SizedBox(width: 12),
+                        Expanded(
+                          child: Text(
+                            'Please use the Next button to proceed to the next step.',
+                            style: TextStyle(
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
+                    backgroundColor: Colors.orange,
+                    behavior: SnackBarBehavior.floating,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    margin: const EdgeInsets.all(16),
+                    duration: const Duration(seconds: 3),
                   ),
-                const SizedBox(
-                  width: 12,
-                ),
-                if (currentStep == 0)
-                  Expanded(
-                    child: ElevatedButton(
-                      onPressed: (isNavigationDisabled || !isInfoFormValid)
-                          ? null
-                          : () {
-                              if (globalKey.currentState != null) {
-                                final isValid = globalKey.currentState!
-                                    .validateAndSave();
-                                if (!isValid) {
-                                  // Hide any existing snackbar first
-                                  ScaffoldMessenger.of(context).hideCurrentSnackBar();
-                                  // Show error snackbar
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                      content: const Row(
-                                        children: [
-                                          Icon(
-                                            Icons.error_outline,
-                                            color: Colors.white,
-                                          ),
-                                          SizedBox(width: 12),
-                                          Expanded(
-                                            child: Text(
-                                              'Please fill in all required fields before continuing.',
-                                              style: TextStyle(
-                                                color: Colors.white,
-                                              ),
+                );
+              },
+              onStepCancel: () {
+                currentStep == 0 ? null : setState(() => currentStep -= 1);
+              },
+              controlsBuilder: (context, controlsDetails) {
+                currentStep == getSteps().length - 1;
+
+                return Container(
+                  margin: const EdgeInsets.only(top: 50, bottom: 20),
+                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                  child: Row(
+                    children: [
+                      if (currentStep != 0)
+                        Expanded(
+                          child: OutlinedButton.icon(
+                            onPressed: () {
+                              controlsDetails.onStepCancel!();
+                            },
+                            icon: const Icon(Icons.arrow_back, size: 18),
+                            label: const Text("Back"),
+                            style: OutlinedButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(vertical: 14),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                            ),
+                          ),
+                        ),
+                      const SizedBox(
+                        width: 12,
+                      ),
+                      if (currentStep == 0)
+                        Expanded(
+                          child: ElevatedButton(
+                            onPressed: (isNavigationDisabled ||
+                                    !isInfoFormValid)
+                                ? null
+                                : () {
+                                    if (globalKey.currentState != null) {
+                                      final isValid = globalKey.currentState!
+                                          .validateAndSave();
+                                      if (!isValid) {
+                                        // Hide any existing snackbar first
+                                        ScaffoldMessenger.of(context)
+                                            .hideCurrentSnackBar();
+                                        // Show error snackbar
+                                        ScaffoldMessenger.of(context)
+                                            .showSnackBar(
+                                          SnackBar(
+                                            content: const Row(
+                                              children: [
+                                                Icon(
+                                                  Icons.error_outline,
+                                                  color: Colors.white,
+                                                ),
+                                                SizedBox(width: 12),
+                                                Expanded(
+                                                  child: Text(
+                                                    'Please fill in all required fields before continuing.',
+                                                    style: TextStyle(
+                                                      color: Colors.white,
+                                                    ),
+                                                  ),
+                                                ),
+                                              ],
                                             ),
+                                            backgroundColor: Colors.red,
+                                            behavior: SnackBarBehavior.floating,
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(8),
+                                            ),
+                                            margin: const EdgeInsets.all(16),
+                                            duration:
+                                                const Duration(seconds: 3),
                                           ),
-                                        ],
-                                      ),
-                                      backgroundColor: Colors.red,
-                                      behavior: SnackBarBehavior.floating,
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(8),
-                                      ),
-                                      margin: const EdgeInsets.all(16),
-                                      duration: const Duration(seconds: 3),
-                                    ),
-                                  );
-                                  return;
-                                }
-                              }
-                              controlsDetails.onStepContinue!();
-                            },
-                      style: ElevatedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(
-                            isInfoFormValid ? "Next" : "Fill Required Fields",
-                            style: TextStyle(
-                              fontSize: isInfoFormValid ? 16 : 13,
+                                        );
+                                        return;
+                                      }
+                                    }
+                                    controlsDetails.onStepContinue!();
+                                  },
+                            style: ElevatedButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(vertical: 14),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                            ),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text(
+                                  isInfoFormValid
+                                      ? "Next"
+                                      : "Fill Required Fields",
+                                  style: TextStyle(
+                                    fontSize: isInfoFormValid ? 16 : 13,
+                                  ),
+                                ),
+                                if (isInfoFormValid) ...[
+                                  const SizedBox(width: 8),
+                                  const Icon(Icons.arrow_forward, size: 18),
+                                ],
+                              ],
                             ),
                           ),
-                          if (isInfoFormValid) ...[
-                            const SizedBox(width: 8),
-                            const Icon(Icons.arrow_forward, size: 18),
-                          ],
-                        ],
-                      ),
-                    ),
-                  ),
-                if (currentStep == 1)
-                  Expanded(
-                    child: ElevatedButton(
-                      onPressed: (isNavigationDisabled || !isCostingFormValid)
-                          ? null
-                          : () async {
-                              ref.read(loadingProvider.notifier).set(true);
-                              if (costingScreenState.currentState == null) {
-                              } else if (costingScreenState.currentState !=
-                                  null) {
-                                await costingScreenState.currentState!
-                                    .saveCostingModelToParent();
+                        ),
+                      if (currentStep == 1)
+                        Expanded(
+                          child: ElevatedButton(
+                            onPressed: (isNavigationDisabled ||
+                                    !isCostingFormValid)
+                                ? null
+                                : () async {
+                                    ref
+                                        .read(loadingProvider.notifier)
+                                        .set(true);
+                                    try {
+                                      if (costingScreenState.currentState !=
+                                          null) {
+                                        await costingScreenState.currentState!
+                                            .saveCostingModelToParent();
 
-                                await ref
-                                    .read(costingProvider.notifier)
-                                    .createCosting(costing!);
-                                await ref
-                                    .read(costingsProvider.notifier)
-                                    .refresh();
-                              }
-                              controlsDetails.onStepContinue!();
-                              ref.read(loadingProvider.notifier).set(false);
+                                        if (costing != null) {
+                                          // Check if this is an update or create operation
+                                          if (widget.costing != null) {
+                                            // Update existing costing
+                                            await ref
+                                                .read(costingProvider.notifier)
+                                                .updateCosting(costing!);
+                                          } else {
+                                            // Create new costing
+                                            await ref
+                                                .read(costingProvider.notifier)
+                                                .createCosting(costing!);
+                                          }
+                                          await ref
+                                              .read(costingsProvider.notifier)
+                                              .refresh();
+                                        }
+                                      }
+                                      controlsDetails.onStepContinue!();
+                                    } catch (e) {
+                                      ScaffoldMessenger.of(context)
+                                          .showSnackBar(
+                                        SnackBar(
+                                          content:
+                                              Text('Error saving costing: $e'),
+                                          backgroundColor: Colors.red,
+                                        ),
+                                      );
+                                    } finally {
+                                      ref
+                                          .read(loadingProvider.notifier)
+                                          .set(false);
+                                    }
+                                  },
+                            style: ElevatedButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(vertical: 14),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                            ),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text(
+                                  isCostingFormValid
+                                      ? "Next"
+                                      : "Add Costing Data",
+                                  style: TextStyle(
+                                    fontSize: isCostingFormValid ? 16 : 13,
+                                  ),
+                                ),
+                                if (isCostingFormValid) ...[
+                                  const SizedBox(width: 8),
+                                  const Icon(Icons.arrow_forward, size: 18),
+                                ],
+                              ],
+                            ),
+                          ),
+                        ),
+                      if (currentStep == 2)
+                        Expanded(
+                          child: ElevatedButton(
+                            onPressed: () {
+                              Navigator.pushAndRemoveUntil(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => CostingListing(
+                                      clientName: widget.clientName,
+                                      clientGuid: widget.clientGuid,
+                                    ),
+                                  ),
+                                  (route) => false);
                             },
-                      style: ElevatedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(
-                            isCostingFormValid ? "Next" : "Add Costing Data",
-                            style: TextStyle(
-                              fontSize: isCostingFormValid ? 16 : 13,
+                            style: ElevatedButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(vertical: 14),
+                              backgroundColor: Colors.green,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                            ),
+                            child: const Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  Icons.check_circle,
+                                  size: 18,
+                                  color: Colors.white,
+                                ),
+                                SizedBox(width: 8),
+                                Text(
+                                  "Done",
+                                  style: TextStyle(color: Colors.white),
+                                ),
+                              ],
                             ),
                           ),
-                          if (isCostingFormValid) ...[
-                            const SizedBox(width: 8),
-                            const Icon(Icons.arrow_forward, size: 18),
-                          ],
-                        ],
-                      ),
-                    ),
-                  ),
-                if (currentStep == 2)
-                  Expanded(
-                    child: ElevatedButton(
-                      onPressed: () {
-                        Navigator.pushAndRemoveUntil(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => CostingListing(
-                              clientName: widget.clientName,
-                              clientGuid: widget.clientGuid,
-                            ),
-                          ),
-                          (route) => false
-                        );
-                      },
-                      style: ElevatedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        backgroundColor: Colors.green,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
                         ),
-                      ),
-                      child: const Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(Icons.check_circle, size: 18,color: Colors.white,),
-                          SizedBox(width: 8),
-                          Text("Done", style: TextStyle(color: Colors.white),),
-                        ],
-                      ),
-                    ),
+                    ],
                   ),
-              ],
-            ),
-          );
-        },
+                );
+              },
             ),
           ),
         ],
@@ -359,7 +424,7 @@ class _StepperState extends ConsumerState<CostingStepper> {
 
   List<Step> getSteps() => [
         Step(
-          state: currentStep > 0 
+          state: currentStep > 0
               ? (isInfoFormValid ? StepState.complete : StepState.error)
               : StepState.indexed,
           isActive: currentStep == 0,
@@ -370,31 +435,29 @@ class _StepperState extends ConsumerState<CostingStepper> {
           content: Padding(
             padding: const EdgeInsets.only(top: 8.0, bottom: 16.0),
             child: InfoScreen(
-            setIsNavigationDisabled: (bool isNavigationDisabled) {
-              setState(() {
-                this.isNavigationDisabled = isNavigationDisabled;
-              });
-            },
-            key: globalKey,
-            clientName: widget.clientName,
-            infoUpdate: (InfoModel info) {
-              this.info = info;
-            },
-            info: info,
-            setIsFormValid: (bool isValid) {
-              setState(() {
-                isInfoFormValid = isValid;
-              });
-            },
+              setIsNavigationDisabled: (bool isNavigationDisabled) {
+                setState(() {
+                  this.isNavigationDisabled = isNavigationDisabled;
+                });
+              },
+              key: globalKey,
+              clientName: widget.clientName,
+              infoUpdate: (InfoModel info) {
+                this.info = info;
+              },
+              info: info,
+              setIsFormValid: (bool isValid) {
+                setState(() {
+                  isInfoFormValid = isValid;
+                });
+              },
             ),
           ),
         ),
         Step(
           state: currentStep > 1
               ? (isCostingFormValid ? StepState.complete : StepState.error)
-              : (currentStep == 1 
-                  ? StepState.indexed 
-                  : StepState.disabled),
+              : (currentStep == 1 ? StepState.indexed : StepState.disabled),
           isActive: currentStep == 1,
           title: const Text(
             "Costing",
@@ -405,29 +468,27 @@ class _StepperState extends ConsumerState<CostingStepper> {
             child: info == null
                 ? Container()
                 : CostingScreen(
-                  key: costingScreenState,
-                  clientName: widget.clientName,
-                  clientGuid: widget.clientGuid,
-                  costingGUID: costingGUID,
-                  info: info!,
-                  costingUpdate: (Costing costing) {
-                    this.costing = costing;
-                  },
-                  costing: costing,
-                  setIsFormValid: (bool isValid) {
-                    setState(() {
-                      isCostingFormValid = isValid;
-                    });
-                  },
-                ),
+                    key: costingScreenState,
+                    clientName: widget.clientName,
+                    clientGuid: widget.clientGuid,
+                    costingGUID: costingGUID,
+                    info: info!,
+                    costingUpdate: (Costing costing) {
+                      this.costing = costing;
+                    },
+                    costing: costing,
+                    setIsFormValid: (bool isValid) {
+                      setState(() {
+                        isCostingFormValid = isValid;
+                      });
+                    },
+                  ),
           ),
         ),
         Step(
           state: currentStep == 2
               ? StepState.indexed
-              : (currentStep > 2
-                  ? StepState.complete
-                  : StepState.disabled),
+              : (currentStep > 2 ? StepState.complete : StepState.disabled),
           isActive: currentStep == 2,
           title: const Text(
             "Preview",
@@ -438,11 +499,12 @@ class _StepperState extends ConsumerState<CostingStepper> {
             child: costing == null
                 ? Container()
                 : Preview(
-                  previewModel: PreviewModel(
-                      costing: costing!, clientName: widget.clientName),
-                  costing: costing,
-                  clientName: widget.clientName,
-                   isFromStepper: true,),
+                    previewModel: PreviewModel(
+                        costing: costing!, clientName: widget.clientName),
+                    costing: costing,
+                    clientName: widget.clientName,
+                    isFromStepper: true,
+                  ),
           ),
         ),
       ];

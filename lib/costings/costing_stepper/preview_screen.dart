@@ -92,33 +92,34 @@ class _PreviewState extends ConsumerState<Preview> {
                     children: [
                       ListTile(
                         title: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: widget.costing != null
-                              ? [
-                                  Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      const Text("Sari Name",
-                                          style: TextStyle(fontSize: 15)),
-                                      Text(
-                                        widget.costing!.sariName.toString(),
-                                        style: const TextStyle(fontSize: 25),
-                                      ),
-                                    ],
-                                  ),
-                                  const SizedBox(width: 10),
-                                  Column(
-                                    children: [
-                                      const Text("Design No.",
-                                          style: TextStyle(fontSize: 15)),
-                                      Text(widget.costing!.designNo.toString(),
-                                          style: const TextStyle(fontSize: 25)),
-                                    ],
-                                  ),
-                                ]
-                              : [],
-                        ),
+  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+  children: widget.costing != null
+      ? [
+          Column(
+            crossAxisAlignment:
+                CrossAxisAlignment.start,
+            children: [
+              const Text("Sari Name",
+                  style: TextStyle(fontSize: 15)),
+              Text(
+                widget.costing!.sariName.toString(),
+                style: const TextStyle(fontSize: 25),
+              ),
+            ],
+          ),
+          const SizedBox(width: 10),
+          if (widget.costing!.designNo != null)
+            Column(
+              children: [
+                const Text("Design No.",
+                    style: TextStyle(fontSize: 15)),
+                Text(widget.costing!.designNo.toString(),
+                    style: const TextStyle(fontSize: 25)),
+              ],
+            ),
+        ]
+      : [],
+),
                         subtitle: Column(
                           mainAxisAlignment: MainAxisAlignment.start,
                           children: widget.costing != null

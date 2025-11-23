@@ -65,13 +65,33 @@ class InfoState extends ConsumerState<InfoScreen> {
     }
   }
 
+  // @override
+  // void initState() {
+  //   super.initState();
+  //   sariNameController = TextEditingController(text: widget.info?.sariName);
+  //   designNoController =
+  //       TextEditingController(text: widget.info?.designNo.toString() ?? '0');
+  //   url = widget.info?.imageUrl;
+  //   // Update form validity after init
+  //   WidgetsBinding.instance.addPostFrameCallback((_) {
+  //     _updateFormValidity();
+  //   });
+  // }
   @override
   void initState() {
     super.initState();
-    sariNameController = TextEditingController(text: widget.info?.sariName);
+    sariNameController =
+        TextEditingController(text: widget.info?.sariName ?? '');
     designNoController =
-        TextEditingController(text: widget.info?.designNo.toString() ?? '0');
-    url = widget.info?.imageUrl;
+        TextEditingController(text: widget.info?.designNo?.toString() ?? '');
+
+    // Set initial URL if editing
+    if (widget.info != null &&
+        widget.info!.imageUrl.isNotEmpty &&
+        widget.info!.imageUrl != 'null') {
+      url = widget.info!.imageUrl;
+    }
+
     // Update form validity after init
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _updateFormValidity();
@@ -187,7 +207,7 @@ class InfoState extends ConsumerState<InfoScreen> {
                           ),
                           errorText: null, // We'll show error below field
                           errorMaxLines: 1,
-                          
+
                           filled: true,
                           fillColor: Colors.grey.shade50,
                           contentPadding: const EdgeInsets.symmetric(
@@ -243,7 +263,6 @@ class InfoState extends ConsumerState<InfoScreen> {
                               width: 2,
                             ),
                           ),
-                         
                           filled: true,
                           fillColor: Colors.grey.shade50,
                           contentPadding: const EdgeInsets.symmetric(
@@ -329,78 +348,78 @@ class InfoState extends ConsumerState<InfoScreen> {
                       ),
                       borderRadius: BorderRadius.circular(12),
                     ),
-                child: Stack(
-                  clipBehavior: Clip.none,
-                  children: [
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(10),
-                      child: Image.network(
-                        url!,
-                        height: 200,
-                        width: double.infinity,
-                        loadingBuilder: (context, child, loadingProgress) {
-                          if (loadingProgress == null) {
-                            return child;
-                          }
-                          return const Center(
-                            child: CircularProgressIndicator(),
-                          );
-                        },
-                        errorBuilder: (context, error, stackTrace) {
-                          return Container(
+                    child: Stack(
+                      clipBehavior: Clip.none,
+                      children: [
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(10),
+                          child: Image.network(
+                            url!,
                             height: 200,
-                            color: Colors.grey.shade200,
-                            child: const Center(
-                              child: Icon(
-                                Icons.error_outline,
-                                size: 48,
+                            width: double.infinity,
+                            loadingBuilder: (context, child, loadingProgress) {
+                              if (loadingProgress == null) {
+                                return child;
+                              }
+                              return const Center(
+                                child: CircularProgressIndicator(),
+                              );
+                            },
+                            errorBuilder: (context, error, stackTrace) {
+                              return Container(
+                                height: 200,
+                                color: Colors.grey.shade200,
+                                child: const Center(
+                                  child: Icon(
+                                    Icons.error_outline,
+                                    size: 48,
+                                    color: Colors.red,
+                                  ),
+                                ),
+                              );
+                            },
+                            fit: BoxFit.cover,
+                          ),
+                        ),
+                        Positioned(
+                          top: 8,
+                          right: 8,
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              shape: BoxShape.circle,
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.2),
+                                  spreadRadius: 1,
+                                  blurRadius: 4,
+                                  offset: const Offset(0, 2),
+                                ),
+                              ],
+                            ),
+                            child: IconButton(
+                              onPressed: () {
+                                setState(() {
+                                  url = null;
+                                  if (hasValidated) {
+                                    imageError = 'Image is required';
+                                  }
+                                });
+                                _updateFormValidity();
+                              },
+                              icon: const Icon(
+                                Icons.close,
+                                size: 20,
                                 color: Colors.red,
                               ),
+                              padding: const EdgeInsets.all(4),
+                              constraints: const BoxConstraints(),
                             ),
-                          );
-                        },
-                        fit: BoxFit.cover,
-                      ),
-                    ),
-                    Positioned(
-                      top: 8,
-                      right: 8,
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          shape: BoxShape.circle,
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.2),
-                              spreadRadius: 1,
-                              blurRadius: 4,
-                              offset: const Offset(0, 2),
-                            ),
-                          ],
-                        ),
-                        child: IconButton(
-                          onPressed: () {
-                            setState(() {
-                              url = null;
-                              if (hasValidated) {
-                                imageError = 'Image is required';
-                              }
-                            });
-                            _updateFormValidity();
-                          },
-                          icon: const Icon(
-                            Icons.close,
-                            size: 20,
-                            color: Colors.red,
                           ),
-                          padding: const EdgeInsets.all(4),
-                          constraints: const BoxConstraints(),
                         ),
-                      ),
+                      ],
                     ),
-                  ],
-                ),
-                )
+                  )
                 else
                   Container(
                     padding: const EdgeInsets.all(24.0),
@@ -456,127 +475,139 @@ class InfoState extends ConsumerState<InfoScreen> {
                             ),
                           ),
                         const SizedBox(height: 16),
-                    LayoutBuilder(
-                      builder: (context, constraints) {
-                        if (constraints.maxWidth > 400) {
-                          // Wide layout: buttons side by side
-                          return Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Flexible(
-                                child: ElevatedButton.icon(
-                                  onPressed: () async {
-                                    await pickAndUploadImage(false);
-                                  },
-                                  icon: const Icon(Icons.photo_library, size: 18),
-                                  label: const Text(
-                                    'Gallery',
-                                    style: TextStyle(fontSize: 14),
-                                  ),
-                                  style: ElevatedButton.styleFrom(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 16,
-                                      vertical: 14,
-                                    ),
-                                    backgroundColor: Colors.deepPurple.shade400,
-                                    foregroundColor: Colors.white,
-                                    elevation: 2,
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(12),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(width: 12),
-                              Flexible(
-                                child: ElevatedButton.icon(
-                                  onPressed: () async {
-                                    await pickAndUploadImage(true);
-                                  },
-                                  icon: const Icon(Icons.camera_alt, size: 18),
-                                  label: const Text(
-                                    'Camera',
-                                    style: TextStyle(fontSize: 14),
-                                  ),
-                                  style: ElevatedButton.styleFrom(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 16,
-                                      vertical: 14,
-                                    ),
-                                    backgroundColor: Colors.deepPurple.shade600,
-                                    foregroundColor: Colors.white,
-                                    elevation: 2,
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(12),
+                        LayoutBuilder(
+                          builder: (context, constraints) {
+                            if (constraints.maxWidth > 400) {
+                              // Wide layout: buttons side by side
+                              return Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Flexible(
+                                    child: ElevatedButton.icon(
+                                      onPressed: () async {
+                                        await pickAndUploadImage(false);
+                                      },
+                                      icon: const Icon(Icons.photo_library,
+                                          size: 18),
+                                      label: const Text(
+                                        'Gallery',
+                                        style: TextStyle(fontSize: 14),
+                                      ),
+                                      style: ElevatedButton.styleFrom(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 16,
+                                          vertical: 14,
+                                        ),
+                                        backgroundColor:
+                                            Colors.deepPurple.shade400,
+                                        foregroundColor: Colors.white,
+                                        elevation: 2,
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(12),
+                                        ),
+                                      ),
                                     ),
                                   ),
-                                ),
-                              ),
-                            ],
-                          );
-                        } else {
-                          // Narrow layout: buttons stacked vertically
-                          return Column(
-                            children: [
-                              SizedBox(
-                                width: double.infinity,
-                                child: ElevatedButton.icon(
-                                  onPressed: () async {
-                                    await pickAndUploadImage(false);
-                                  },
-                                  icon: const Icon(Icons.photo_library, size: 20),
-                                  label: const Text(
-                                    'Pick from Gallery',
-                                    style: TextStyle(fontSize: 15),
-                                  ),
-                                  style: ElevatedButton.styleFrom(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 20,
-                                      vertical: 14,
-                                    ),
-                                    backgroundColor: Colors.deepPurple.shade400,
-                                    foregroundColor: Colors.white,
-                                    elevation: 2,
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(12),
+                                  const SizedBox(width: 12),
+                                  Flexible(
+                                    child: ElevatedButton.icon(
+                                      onPressed: () async {
+                                        await pickAndUploadImage(true);
+                                      },
+                                      icon: const Icon(Icons.camera_alt,
+                                          size: 18),
+                                      label: const Text(
+                                        'Camera',
+                                        style: TextStyle(fontSize: 14),
+                                      ),
+                                      style: ElevatedButton.styleFrom(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 16,
+                                          vertical: 14,
+                                        ),
+                                        backgroundColor:
+                                            Colors.deepPurple.shade600,
+                                        foregroundColor: Colors.white,
+                                        elevation: 2,
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(12),
+                                        ),
+                                      ),
                                     ),
                                   ),
-                                ),
-                              ),
-                              const SizedBox(height: 12),
-                              SizedBox(
-                                width: double.infinity,
-                                child: ElevatedButton.icon(
-                                  onPressed: () async {
-                                    await pickAndUploadImage(true);
-                                  },
-                                  icon: const Icon(Icons.camera_alt, size: 20),
-                                  label: const Text(
-                                    'Capture Image',
-                                    style: TextStyle(fontSize: 15),
-                                  ),
-                                  style: ElevatedButton.styleFrom(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 20,
-                                      vertical: 14,
+                                ],
+                              );
+                            } else {
+                              // Narrow layout: buttons stacked vertically
+                              return Column(
+                                children: [
+                                  SizedBox(
+                                    width: double.infinity,
+                                    child: ElevatedButton.icon(
+                                      onPressed: () async {
+                                        await pickAndUploadImage(false);
+                                      },
+                                      icon: const Icon(Icons.photo_library,
+                                          size: 20),
+                                      label: const Text(
+                                        'Pick from Gallery',
+                                        style: TextStyle(fontSize: 15),
+                                      ),
+                                      style: ElevatedButton.styleFrom(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 20,
+                                          vertical: 14,
+                                        ),
+                                        backgroundColor:
+                                            Colors.deepPurple.shade400,
+                                        foregroundColor: Colors.white,
+                                        elevation: 2,
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(12),
+                                        ),
+                                      ),
                                     ),
-                                    backgroundColor: Colors.deepPurple.shade600,
-                                    foregroundColor: Colors.white,
-                                    elevation: 2,
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  const SizedBox(height: 12),
+                                  SizedBox(
+                                    width: double.infinity,
+                                    child: ElevatedButton.icon(
+                                      onPressed: () async {
+                                        await pickAndUploadImage(true);
+                                      },
+                                      icon: const Icon(Icons.camera_alt,
+                                          size: 20),
+                                      label: const Text(
+                                        'Capture Image',
+                                        style: TextStyle(fontSize: 15),
+                                      ),
+                                      style: ElevatedButton.styleFrom(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 20,
+                                          vertical: 14,
+                                        ),
+                                        backgroundColor:
+                                            Colors.deepPurple.shade600,
+                                        foregroundColor: Colors.white,
+                                        elevation: 2,
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(12),
+                                        ),
+                                      ),
                                     ),
                                   ),
-                                ),
-                              ),
-                            ],
-                          );
-                        }
-                      },
+                                ],
+                              );
+                            }
+                          },
+                        ),
+                      ],
                     ),
-                  ],
-                ),
-              ),
+                  ),
               ],
             ),
           ],
@@ -585,16 +616,33 @@ class InfoState extends ConsumerState<InfoScreen> {
     );
   }
 
+  // bool validateAndSave() {
+  //   if (!_validate()) {
+  //     return false;
+  //   }
+
+  //   widget.infoUpdate(
+  //     InfoModel(
+  //       clientName: widget.clientName,
+  //       sariName: sariNameController.text.trim(),
+  //       designNo: int.tryParse(designNoController.text),
+  //       imageUrl: url!,
+  //     ),
+  //   );
+  //   return true;
+  // }
   bool validateAndSave() {
     if (!_validate()) {
       return false;
     }
-    
+
     widget.infoUpdate(
       InfoModel(
         clientName: widget.clientName,
         sariName: sariNameController.text.trim(),
-        designNo: int.tryParse(designNoController.text),
+        designNo: designNoController.text.trim().isEmpty
+            ? null
+            : int.tryParse(designNoController.text),
         imageUrl: url!,
       ),
     );
@@ -606,7 +654,9 @@ class InfoState extends ConsumerState<InfoScreen> {
       InfoModel(
         clientName: widget.clientName,
         sariName: sariNameController.text.trim(),
-        designNo: int.tryParse(designNoController.text),
+        designNo: designNoController.text.trim().isEmpty
+            ? null
+            : int.tryParse(designNoController.text),
         imageUrl: url ?? '',
       ),
     );

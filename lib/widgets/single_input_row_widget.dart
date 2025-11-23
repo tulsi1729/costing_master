@@ -1,5 +1,3 @@
-
-
 import 'package:costing_master/constants.dart';
 import 'package:costing_master/widgets/my_answer.dart';
 import 'package:costing_master/widgets/my_text_field.dart';
@@ -30,13 +28,17 @@ class SingleInputRowState extends State<SingleInputRow> {
   String selectedValue = "";
   late final TextEditingController  controller;
 
-  @override
-  void initState() {
+ @override
+void initState() {
   super.initState();
-  controller = TextEditingController(text: widget.initialValue?.toString());
+  // Initialize with existing value or empty string
+  controller = TextEditingController(
+    text: widget.initialValue != null && widget.initialValue! > 0
+        ? widget.initialValue!.toString()
+        : ''
+  );
   charges = widget.initialValue ?? 0;
-  }
-
+}
   @override
   Widget build(BuildContext context) {
     return Row(

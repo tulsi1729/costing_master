@@ -61,10 +61,10 @@ class CostingScreenState extends ConsumerState<CostingScreen> {
     // Form is valid if totalExpense > 0, meaning at least some costing data has been entered
     // This checks that user has filled at least one of:
     // - Diamond charges (any type)
-    // - Sagadi charges (any type)  
+    // - Sagadi charges (any type)
     // - Single input charges (sheet, fitting, cutting, fusing, die, other)
     final bool hasData = totalExpense > 0;
-    
+
     return hasData;
   }
 
@@ -114,35 +114,109 @@ class CostingScreenState extends ConsumerState<CostingScreen> {
   }
 
   @override
-  void initState() {
-    super.initState();
-    chargesMap = {
-      ChargeType.patiShadowDiamond: 0,
-      ChargeType.patiColorDiamond: 0,
-      ChargeType.patiJarkan: 0,
-      ChargeType.patiDMC: 0,
-      ChargeType.butaShadowDiamond: 0,
-      ChargeType.butaColorDiamond: 0,
-      ChargeType.butaJarkan: 0,
-      ChargeType.butaDMC: 0,
-      ChargeType.butaSagadiCharges: 0,
-      ChargeType.lessSagadiCharges: 0,
-      ChargeType.valiyaSagadiCharges: 0,
-      ChargeType.sheetCharges: widget.costing?.sheetBharvana ?? 0,
-      ChargeType.lessFiting: widget.costing?.lessFiting ?? 0,
-      ChargeType.reniyaCutting: widget.costing?.reniyaCutting ?? 0,
-      ChargeType.fusing: widget.costing?.fusing ?? 0,
-      ChargeType.dieKapvana: widget.costing?.dieKapvana ?? 0,
-      ChargeType.otherCharges: widget.costing?.otherCost ?? 0,
-    };
-    vatavPercentage = widget.costing?.vatavPercentage;
-    profitPercentage = widget.costing?.profitPercentage;
-    totalExpense = widget.costing?.totalExpense ?? 0;
-    // Update form validity after init
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _updateFormValidity();
+void initState() {
+  super.initState();
+  
+  // Initialize chargesMap with existing or default values
+  chargesMap = {
+    ChargeType.patiShadowDiamond: 0,
+    ChargeType.patiColorDiamond: 0,
+    ChargeType.patiJarkan: 0,
+    ChargeType.patiDMC: 0,
+    ChargeType.butaShadowDiamond: 0,
+    ChargeType.butaColorDiamond: 0,
+    ChargeType.butaJarkan: 0,
+    ChargeType.butaDMC: 0,
+    ChargeType.butaSagadiCharges: 0,
+    ChargeType.lessSagadiCharges: 0,
+    ChargeType.valiyaSagadiCharges: 0,
+    ChargeType.sheetCharges: widget.costing?.sheetBharvana ?? 0,
+    ChargeType.lessFiting: widget.costing?.lessFiting ?? 0,
+    ChargeType.reniyaCutting: widget.costing?.reniyaCutting ?? 0,
+    ChargeType.fusing: widget.costing?.fusing ?? 0,
+    ChargeType.dieKapvana: widget.costing?.dieKapvana ?? 0,
+    ChargeType.otherCharges: widget.costing?.otherCost ?? 0,
+  };
+  
+  // Load existing percentages and amounts
+  vatavPercentage = widget.costing?.vatavPercentage ?? 0;
+  profitPercentage = widget.costing?.profitPercentage ?? 0;
+  totalExpense = widget.costing?.totalExpense ?? 0;
+  
+  // IMPORTANT: Load existing diamond costings if editing
+  if (widget.costing?.diamondCostingsMap != null) {
+    diamondCostingsMap = Map.from(widget.costing!.diamondCostingsMap!);
+    
+    // Calculate diamond charges for chargesMap
+    widget.costing!.diamondCostingsMap!.forEach((partType, diamondMap) {
+      diamondMap.forEach((diamondType, diamondCosting) {
+        double charges = diamondCosting.diamondRate * diamondCosting.diamondsPerPart;
+        
+        // Determine the charge type based on part and diamond type
+        ChargeType? chargeType;
+        if (partType == PartType.buta && diamondType == DiamondType.shadow) {
+          chargeType = ChargeType.butaShadowDiamond;
+        } else if (partType == PartType.buta && diamondType == DiamondType.color) {
+          chargeType = ChargeType.butaColorDiamond;
+        } else if (partType == PartType.buta && diamondType == DiamondType.jarkan) {
+          chargeType = ChargeType.butaJarkan;
+        } else if (partType == PartType.buta && diamondType == DiamondType.dmc) {
+          chargeType = ChargeType.butaDMC;
+        } else if (partType == PartType.patti && diamondType == DiamondType.shadow) {
+          chargeType = ChargeType.patiShadowDiamond;
+        } else if (partType == PartType.patti && diamondType == DiamondType.color) {
+          chargeType = ChargeType.patiColorDiamond;
+        } else if (partType == PartType.patti && diamondType == DiamondType.jarkan) {
+          chargeType = ChargeType.patiJarkan;
+        } else if (partType == PartType.patti && diamondType == DiamondType.dmc) {
+          chargeType = ChargeType.patiDMC;
+        }
+        
+        if (chargeType != null) {
+          chargesMap[chargeType] = charges;
+        }
+      });
     });
   }
+  
+  // IMPORTANT: Load existing sagadi costings if editing
+  if (widget.costing?.sagadiCostingsMap != null) {
+    sagadiCostingsMap = Map.from(widget.costing!.sagadiCostingsMap!);
+    
+    // Calculate sagadi charges for chargesMap
+    widget.costing!.sagadiCostingsMap!.forEach((itemType, sagadiCosting) {
+      double charges = sagadiCosting.itemsCount * sagadiCosting.chargePerItem;
+      
+      ChargeType? chargeType;
+      if (itemType == SagadiItemType.buta) {
+        chargeType = ChargeType.butaSagadiCharges;
+      } else if (itemType == SagadiItemType.less) {
+        chargeType = ChargeType.lessSagadiCharges;
+      } else if (itemType == SagadiItemType.valiya) {
+        chargeType = ChargeType.valiyaSagadiCharges;
+      }
+      
+      if (chargeType != null) {
+        chargesMap[chargeType] = charges;
+      }
+    });
+  }
+  
+  // Calculate vatav and profit amounts if editing
+  if (widget.costing != null) {
+    if (vatavPercentage != null && vatavPercentage! > 0) {
+      vatavAmount = (totalExpense * vatavPercentage!) / 100;
+    }
+    if (profitPercentage != null && profitPercentage! > 0) {
+      profitAmount = (totalExpense * profitPercentage!) / 100;
+    }
+  }
+  
+  // Update form validity after init
+  WidgetsBinding.instance.addPostFrameCallback((_) {
+    _updateFormValidity();
+  });
+}
 
   @override
   Widget build(BuildContext context) {
@@ -191,7 +265,7 @@ class CostingScreenState extends ConsumerState<CostingScreen> {
                     });
                     return vatavPercentage;
                   },
-                  initialValue: vatavPercentage == 0 ? null : vatavPercentage,
+                  initialValue: vatavPercentage,
                 ),
                 const MyDivider(),
                 BorderContainer(
@@ -205,7 +279,9 @@ class CostingScreenState extends ConsumerState<CostingScreen> {
                         ),
                       ),
                       const Text(" = "),
-                      MyAnswer(answer: totalExpense + (vatavPercentage ?? 0)),
+                      MyAnswer(
+                          answer:
+                              totalExpense + vatavAmount), // Changed this line
                     ],
                   ),
                 ),
@@ -221,7 +297,7 @@ class CostingScreenState extends ConsumerState<CostingScreen> {
                     });
                     return profitPercentage;
                   },
-                  initialValue: profitPercentage == 0 ? null : profitPercentage,
+                  initialValue: profitPercentage,
                 ),
                 const MyDivider(),
                 BorderContainer(
@@ -237,8 +313,8 @@ class CostingScreenState extends ConsumerState<CostingScreen> {
                       const Text(" = "),
                       MyAnswer(
                           answer: totalExpense +
-                              (vatavPercentage ?? 0) +
-                              (profitPercentage ?? 0)),
+                              vatavAmount +
+                              profitAmount), // Changed this line
                     ],
                   ),
                 ),
@@ -287,29 +363,27 @@ class CostingScreenState extends ConsumerState<CostingScreen> {
   }
 
   List<Widget> _buildSingleInputRows(List<Map<String, dynamic>> data) {
-    List<Widget> rows = [];
-    for (int i = 0; i < data.length; i++) {
-      rows.add(
-        SingleInputRow(
-          initialValue: chargesMap[data[i]['chargeType']] == 0
-              ? null
-              : chargesMap[data[i]['chargeType']],
-          labelText: data[i]['labelText'],
-          onChanged: (charges) {
-            onChanges(
-              data[i]['chargeType'],
-              charges,
-            );
-            return null;
-          },
-        ),
-      );
-      if (i < data.length - 1) {
-        rows.add(const MyDivider());
-      }
+  List<Widget> rows = [];
+  for (int i = 0; i < data.length; i++) {
+    rows.add(
+      SingleInputRow(
+        initialValue: chargesMap[data[i]['chargeType']], // Remove the == 0 check
+        labelText: data[i]['labelText'],
+        onChanged: (charges) {
+          onChanges(
+            data[i]['chargeType'],
+            charges,
+          );
+          return null;
+        },
+      ),
+    );
+    if (i < data.length - 1) {
+      rows.add(const MyDivider());
     }
-    return rows;
   }
+  return rows;
+}
 
   List<Widget> _buildSagadiInputRows(List<Map<String, dynamic>> data) {
     List<Widget> rows = [];
