@@ -263,7 +263,7 @@ void initState() {
                       vatavAmount = totalExpense * vatavPercentage / 100;
                       this.vatavPercentage = vatavPercentage;
                     });
-                    return vatavPercentage;
+                    return vatavAmount;
                   },
                   initialValue: vatavPercentage,
                 ),
@@ -292,10 +292,10 @@ void initState() {
                   suffixText: '%',
                   onChanged: (profitPercentage) {
                     setState(() {
-                      profitAmount = totalExpense * profitPercentage / 100;
+                      profitAmount = (totalExpense + vatavAmount) * profitPercentage / 100;
                       this.profitPercentage = profitPercentage;
                     });
-                    return profitPercentage;
+                    return profitAmount;
                   },
                   initialValue: profitPercentage,
                 ),

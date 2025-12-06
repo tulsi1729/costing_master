@@ -295,7 +295,7 @@ class PreviewModel {
     // );
 
     final profitPercentage = costing.profitPercentage ?? 0;
-    final profitAmount = (grandTotal * profitPercentage) / 100;
+    final profitAmount = (totalPlusVatav * profitPercentage) / 100;
 
     previewMap[ChargeType.profitAmount] = PreviewTableRowModel(
       title: "profit (${profitPercentage.toStringAsFixed(2)}%)",

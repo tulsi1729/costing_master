@@ -101,7 +101,7 @@ class _DiamondsRateRowState extends State<DiamondsRateRow> {
         int.tryParse(diamondsPerElementController.text) ?? 0;
     double elementsCount = double.tryParse(elementsCountController.text) ?? 0;
     double oneDiamondsRate =
-        (double.tryParse(diamondsRateController.text) ?? 0 / n);
+        ((double.tryParse(diamondsRateController.text) ?? 0) / n);
 
     setState(() {
       totalSum = (diamondsPerElement * elementsCount * oneDiamondsRate);
