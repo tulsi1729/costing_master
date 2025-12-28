@@ -1,5 +1,4 @@
 import 'package:costing_master/auth/notifiers/auth_notifier.dart';
-import 'package:costing_master/auth/screens/login.dart';
 import 'package:costing_master/common/enums.dart';
 import 'package:costing_master/domain/enums.dart';
 import 'package:costing_master/model/costing.dart';
@@ -7,6 +6,7 @@ import 'package:costing_master/model/diamond_costing.dart';
 import 'package:costing_master/model/info_model.dart';
 import 'package:costing_master/model/sagadi_costing.dart';
 import 'package:costing_master/model/user_model.dart';
+import 'package:costing_master/screens/splash_screen.dart';
 import 'package:costing_master/widgets/border_container.dart';
 import 'package:costing_master/widgets/diamonds_rate_row.dart';
 import 'package:costing_master/widgets/my_answer.dart';
@@ -78,7 +78,7 @@ class CostingScreenState extends ConsumerState<CostingScreen> {
     ref.read(authProvider.notifier).logOut();
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => const LoginScreen()),
+      MaterialPageRoute(builder: (context) => const SplashScreen()),
     );
   }
 

@@ -1,10 +1,9 @@
-import 'dart:async';
 import 'package:costing_master/auth/notifiers/auth_notifier.dart';
 import 'package:costing_master/auth/screens/login.dart';
 import 'package:costing_master/client/screen/client_listing.dart';
+import 'package:costing_master/model/user_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
 class SplashScreen extends ConsumerStatefulWidget {
   const SplashScreen({super.key});
 
@@ -13,55 +12,71 @@ class SplashScreen extends ConsumerStatefulWidget {
 }
 
 class _SplashScreenState extends ConsumerState<SplashScreen> {
+  bool _navigated = false;
+  bool _delayDone = false;
+
   @override
   void initState() {
     super.initState();
-    _navigate();
-  }
 
-  Future<void> _navigate() async {
-    await Future.delayed(const Duration(seconds: 2));
-
-    final authState = ref.read(authProvider);
-    authState.when(
-      data: (user) {
-        final isAuthenticated = user != null;
-        if (mounted) {
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(
-              builder: (_) =>
-                  isAuthenticated ? const ClientListing() : const LoginScreen(),
-            ),
-          );
-        }
-      },
-      loading: () {
-        Future.delayed(const Duration(milliseconds: 500), _navigate);
-      },
-      error: (_, __) {
-        if (mounted) {
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (_) => const LoginScreen()),
-          );
-        }
-      },
-    );
+    Future.delayed(const Duration(seconds: 2), () {
+      if (mounted) {
+        setState(() {
+          _delayDone = true;
+        });
+      }
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    final authState = ref.watch(authProvider);
+
+    if (_delayDone && !_navigated) {
+      authState.when(
+        data: (user) {
+          _navigated = true;
+
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                builder: (_) =>
+                    user != null
+                        ? const ClientListing()
+                        : const LoginScreen(),
+              ),
+            );
+          });
+        },
+        loading: () {
+          // stay on splash
+        },
+        error: (_, __) {
+          _navigated = true;
+
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (_) => const LoginScreen()),
+            );
+          });
+        },
+      );
+    }
+
+    return const Scaffold(
       backgroundColor: Colors.white,
       body: Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Image.asset('assets/icon/icon.png',
-                fit: BoxFit.cover, height: 200),
-            const SizedBox(height: 20),
-            const Text(
+            Image(
+              image: AssetImage('assets/icon/icon.png'),
+              height: 200,
+            ),
+            SizedBox(height: 20),
+            Text(
               "Costing Master",
               style: TextStyle(
                 fontSize: 20,

@@ -24,7 +24,37 @@ class _CostingListingState extends ConsumerState<CostingListing> {
             appBar: AppBar(
               title: Text(widget.clientName),
             ),
-            body: ListView.builder(
+            body: costings.isEmpty
+            ? const Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.inventory_2_outlined,
+                      size: 64,
+                      color: Colors.grey,
+                    ),
+                    SizedBox(height: 12),
+                    Text(
+                      'No costings found',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w500,
+                        color: Colors.grey,
+                      ),
+                    ),
+                    SizedBox(height: 6),
+                    Text(
+                      'Tap + to create your first costing',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Colors.grey,
+                      ),
+                    ),
+                  ],
+                ),
+              )
+            : ListView.builder(
               itemCount: costings.length,
               itemBuilder: (context, index) {
                 final costing = costings[index];

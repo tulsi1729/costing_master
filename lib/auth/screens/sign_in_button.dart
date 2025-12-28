@@ -14,7 +14,6 @@ class SignInButton extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final colorScheme = Theme.of(context).colorScheme;
-    
     return SizedBox(
       width: double.infinity,
       child: ElevatedButton.icon(

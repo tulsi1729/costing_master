@@ -1,6 +1,5 @@
 import 'package:costing_master/auth/repository/auth_repository.dart';
 import 'package:costing_master/model/user_model.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class AuthNotifier extends AsyncNotifier<UserModel?> {
@@ -12,24 +11,22 @@ class AuthNotifier extends AsyncNotifier<UserModel?> {
     return getUserModel();
   }
 
-  Future<UserModel?> getUserModel() async {
-    final authStream = _authRepository.authStateChange;
-    final User? user = await authStream.first;
-    if (user == null) {
-      return null;
-    }
+    Future<UserModel?> getUserModel() async {
+    final user = _authRepository.currentUser;
+    if (user == null) return null;
 
-    return await _authRepository.signInWithGoogle(true);
+    return await _authRepository.getUserData(user.uid).first;
   }
 
-  void signInWithGoogle(bool isFromLogin) async {
+ Future<void> signInWithGoogle(bool isFromLogin) async {
+    state = const AsyncValue.loading();
     final userModel = await _authRepository.signInWithGoogle(isFromLogin);
     state = AsyncValue.data(userModel);
   }
 
-  void logOut() async {
-    _authRepository.logOut();
-    await ref.read(authProvider.notifier).refresh();
+  Future<void> logOut() async {
+    await _authRepository.logOut();
+    state = const AsyncValue.data(null);
   }
 
   Future<void> refresh() async {

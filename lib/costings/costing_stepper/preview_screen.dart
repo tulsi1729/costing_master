@@ -46,7 +46,7 @@ class _PreviewState extends ConsumerState<Preview> {
           await (image.toByteData(format: ui.ImageByteFormat.png));
       if (byteData != null) {
         await ImageGallerySaverPlus.saveImage(
-            quality: 100, byteData.buffer.asUint8List());
+            byteData.buffer.asUint8List(), quality: 100);
       }
     }
 
@@ -358,7 +358,7 @@ class _PreviewState extends ConsumerState<Preview> {
                   ),
                 ),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 10),
               // Save Button
               Row(
                 mainAxisAlignment: MainAxisAlignment.end,

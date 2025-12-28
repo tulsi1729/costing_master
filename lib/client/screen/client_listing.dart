@@ -6,6 +6,7 @@ import 'package:costing_master/costings/notifier/selected_client_notifier.dart';
 import 'package:costing_master/costings/screens/costing_listing.dart';
 import 'package:costing_master/model/client.dart';
 import 'package:costing_master/model/user_model.dart';
+import 'package:costing_master/screens/splash_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -30,7 +31,7 @@ class _CreateNewClientState extends ConsumerState<ClientListing> {
     ref.read(authProvider.notifier).logOut();
     Navigator.pushAndRemoveUntil(
       context,
-      MaterialPageRoute(builder: (context) => const LoginScreen()),
+      MaterialPageRoute(builder: (context) => const SplashScreen()),
       (route) => false,
     );
   }

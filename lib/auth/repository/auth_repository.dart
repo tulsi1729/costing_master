@@ -10,6 +10,7 @@ final authRepositoryProvider = Provider((ref) => AuthRepository(
     firestore: ref.read(firestoreProvider),
     auth: ref.read(firebaseAuthProvider),
     googleSignIn: ref.read(googleSignInProvider)));
+    
 
 class AuthRepository {
   final FirebaseFirestore _firestore;
@@ -24,21 +25,27 @@ class AuthRepository {
         _auth = auth,
         _googleSignIn = googleSignIn;
 
+  User? get currentUser => _auth.currentUser;
   CollectionReference get _users =>
       _firestore.collection(FirebaseConstants.usersCollection);
 
   Stream<User?> get authStateChange => _auth.authStateChanges();
 
-  Future<UserModel> signInWithGoogle(bool isFromLogin) async {
+  Future<UserModel?> signInWithGoogle(bool isFromLogin) async {
     // try {
-    GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
-    final GoogleSignInAuthentication? googleAuth =
-        await googleUser?.authentication;
+  final GoogleSignInAccount? googleUser =
+    await _googleSignIn.signIn();
 
-    final credential = GoogleAuthProvider.credential(
-      accessToken: googleAuth?.accessToken,
-      idToken: googleAuth?.idToken,
-    );
+if (googleUser == null) return null;
+
+final GoogleSignInAuthentication googleAuth =
+    await googleUser.authentication;
+
+final credential = GoogleAuthProvider.credential(
+  idToken: googleAuth.idToken,
+  accessToken: googleAuth.accessToken,
+);
+
 
     UserCredential userCredential;
 
@@ -73,7 +80,7 @@ class AuthRepository {
         (event) => UserModel.fromMap(event.data() as Map<String, dynamic>));
   }
 
-  void logOut() async {
+  Future<void> logOut() async {
     await _googleSignIn.signOut();
     await _auth.signOut();
   }

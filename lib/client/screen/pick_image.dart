@@ -73,7 +73,7 @@ class _PickImageState extends ConsumerState<PickImage> {
         await (image.toByteData(format: ui.ImageByteFormat.png));
     if (byteData != null) {
       final result = await ImageGallerySaverPlus.saveImage(
-          quality: 100, byteData.buffer.asUint8List());
+          byteData.buffer.asUint8List(), quality: 100);
       log(result);
     }
   }

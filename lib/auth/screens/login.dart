@@ -1,15 +1,34 @@
+import 'package:costing_master/auth/notifiers/auth_notifier.dart';
+import 'package:costing_master/client/screen/client_listing.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:costing_master/auth/screens/sign_in_button.dart';
 import 'package:flutter/material.dart';
 
-class LoginScreen extends StatelessWidget {
+class LoginScreen extends ConsumerWidget {
   const LoginScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final colorScheme = Theme.of(context).colorScheme;
     final size = MediaQuery.of(context).size;
     final textTheme = Theme.of(context).textTheme;
-    
+     final authState = ref.watch(authProvider);
+     authState.when(
+      data: (user) {
+        if (user != null) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                builder: (_) => const ClientListing(),
+              ),
+            );
+          });
+        }
+      },
+      loading: () {},
+      error: (_, __) {},
+    );
     return Scaffold(
       extendBodyBehindAppBar: true,
       body: Container(
