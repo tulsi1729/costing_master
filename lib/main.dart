@@ -1,4 +1,5 @@
 import 'package:costing_master/screens/splash_screen.dart';
+import 'package:costing_master/widgets/offline_banner.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -19,7 +20,17 @@ class MyApp extends ConsumerWidget {
 
     return MaterialApp(
       debugShowCheckedModeBanner: true,
-      home: SplashScreen()
+      builder: (context, child) {
+        return Scaffold(
+          body: Column(
+            children: [
+              Expanded(child: child ?? const SizedBox()),
+              const OfflineBanner(),
+            ],
+          ),
+        );
+      },
+      home: const SplashScreen()
     );
   }
 }

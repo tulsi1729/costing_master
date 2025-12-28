@@ -1,4 +1,5 @@
 import 'package:costing_master/auth/notifiers/auth_notifier.dart';
+import 'package:costing_master/connectivity/notifier/connectivity_notifier.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -14,10 +15,13 @@ class SignInButton extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final colorScheme = Theme.of(context).colorScheme;
+    final connectivityState = ref.watch(connectivityProvider);
+    final isConnected = connectivityState.value ?? false;
+    
     return SizedBox(
       width: double.infinity,
       child: ElevatedButton.icon(
-        onPressed: () => signINWithGoogle(context, ref),
+        onPressed: isConnected ? () => signINWithGoogle(context, ref) : null,
         icon: Container(
           padding: const EdgeInsets.all(6),
           decoration: BoxDecoration(
