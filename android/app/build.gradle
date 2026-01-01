@@ -22,12 +22,12 @@ if (keystorePropertiesFile.exists()) {
 //flutterVersionCode and name same for pubspec.yaml like
 def flutterVersionCode = localProperties.getProperty('flutter.versionCode')
 if (flutterVersionCode == null) {
-    flutterVersionCode = '1.17'
+    flutterVersionCode = '1.18'
 }
 
 def flutterVersionName = localProperties.getProperty('flutter.versionName')
 if (flutterVersionName == null) {
-    flutterVersionName = '1.17'
+    flutterVersionName = '1.18'
 }
 
 android {
