@@ -25,6 +25,9 @@ class Costing {
   double totalChargesPlusVatavAmount;
   double totalChargesPlusVatavPlusProfit;
 
+  /// Last save time in epoch milliseconds; null for costings saved before v2.
+  int? updatedAt;
+
   Map<PartType, Map<DiamondType, DiamondCosting>>? diamondCostingsMap;
   Map<SagadiItemType, SagadiCosting>? sagadiCostingsMap;
 
@@ -48,6 +51,7 @@ class Costing {
     required this.totalExpense,
     required this.totalChargesPlusVatavAmount,
     required this.totalChargesPlusVatavPlusProfit,
+    this.updatedAt,
   });
 
   Costing copyWith({
@@ -65,6 +69,10 @@ class Costing {
     double? otherCost,
     double? vatavPercentage,
     double? profitPercentage,
+    double? totalExpense,
+    double? totalChargesPlusVatavAmount,
+    double? totalChargesPlusVatavPlusProfit,
+    int? updatedAt,
     Map<PartType, Map<DiamondType, DiamondCosting>>? diamondCostingsMap,
     Map<SagadiItemType, SagadiCosting>? sagadiCostingsMap,
   }) {
@@ -83,9 +91,12 @@ class Costing {
       otherCost: otherCost ?? this.otherCost,
       vatavPercentage: vatavPercentage ?? this.vatavPercentage,
       profitPercentage: profitPercentage ?? this.profitPercentage,
-      totalExpense: totalExpense,
-      totalChargesPlusVatavAmount: totalChargesPlusVatavAmount,
-      totalChargesPlusVatavPlusProfit: totalChargesPlusVatavPlusProfit,
+      totalExpense: totalExpense ?? this.totalExpense,
+      totalChargesPlusVatavAmount:
+          totalChargesPlusVatavAmount ?? this.totalChargesPlusVatavAmount,
+      totalChargesPlusVatavPlusProfit: totalChargesPlusVatavPlusProfit ??
+          this.totalChargesPlusVatavPlusProfit,
+      updatedAt: updatedAt ?? this.updatedAt,
       diamondCostingsMap: diamondCostingsMap ?? this.diamondCostingsMap,
       sagadiCostingsMap: sagadiCostingsMap ?? this.sagadiCostingsMap,
     );
@@ -110,6 +121,7 @@ class Costing {
       'totalExpense': totalExpense,
       'totalChargesPlusVatavAmount': totalChargesPlusVatavAmount,
       'totalChargesPlusVatavPlusProfit': totalChargesPlusVatavPlusProfit,
+      'updatedAt': updatedAt,
       'diamondCostingsMap': diamondCostingsMap == null
           ? null
           : _convertToStringDynamicDiamondMap(diamondCostingsMap!),
@@ -123,38 +135,36 @@ class Costing {
     return Costing(
       guid: map['guid'] as String,
       createdBy: map['createdBy'] as String,
-      designNo: map['designNo'] != null ? map['designNo'] as int : null,
+      designNo: (map['designNo'] as num?)?.toInt(),
       clientGuid: map['clientGuid'] as String,
-      sariName: map['sariName'] as String,
-      imageUrl: map['imageUrl'] as String,
-      sheetBharvana: map['sheetBharvana'] as double,
-      lessFiting: map['lessFiting'] as double,
-      reniyaCutting: map['reniyaCutting'] as double,
-      fusing: map['fusing'] as double,
-      dieKapvana: map['dieKapvana'] as double,
-      otherCost: map['otherCost'] as double,
-      vatavPercentage: map['vatavPercentage'] != null
-          ? map['vatavPercentage'] as double
-          : null,
-      profitPercentage: map['profitPercentage'] != null
-          ? map['profitPercentage'] as double
-          : null,
-      totalExpense: map['totalExpense'] as double,
-      totalChargesPlusVatavAmount: map['totalChargesPlusVatavAmount'] != null
-          ? map['totalChargesPlusVatavAmount'] as double
-          : 0,
+      sariName: map['sariName'] as String? ?? '',
+      imageUrl: map['imageUrl'] as String? ?? '',
+      sheetBharvana: _toDouble(map['sheetBharvana']),
+      lessFiting: _toDouble(map['lessFiting']),
+      reniyaCutting: _toDouble(map['reniyaCutting']),
+      fusing: _toDouble(map['fusing']),
+      dieKapvana: _toDouble(map['dieKapvana']),
+      otherCost: _toDouble(map['otherCost']),
+      vatavPercentage: (map['vatavPercentage'] as num?)?.toDouble(),
+      profitPercentage: (map['profitPercentage'] as num?)?.toDouble(),
+      totalExpense: _toDouble(map['totalExpense']),
+      totalChargesPlusVatavAmount:
+          _toDouble(map['totalChargesPlusVatavAmount']),
       totalChargesPlusVatavPlusProfit:
-          map['totalChargesPlusVatavPlusProfit'] != null
-              ? map['totalChargesPlusVatavPlusProfit'] as double
-              : 0,
+          _toDouble(map['totalChargesPlusVatavPlusProfit']),
+      updatedAt: (map['updatedAt'] as num?)?.toInt(),
       diamondCostingsMap: map['diamondCostingsMap'] != null
-          ? _convertToDiamondCostingMap(map['diamondCostingsMap'])
+          ? _convertToDiamondCostingMap(
+              Map<String, dynamic>.from(map['diamondCostingsMap'] as Map))
           : null,
       sagadiCostingsMap: map['sagadiCostingsMap'] != null
-          ? _convertToSagadiCostingMap(map['sagadiCostingsMap'])
+          ? _convertToSagadiCostingMap(
+              Map<String, dynamic>.from(map['sagadiCostingsMap'] as Map))
           : null,
     );
   }
+
+  static double _toDouble(Object? value) => (value as num?)?.toDouble() ?? 0;
 
   String toJson() => json.encode(toMap());
 
@@ -210,37 +220,28 @@ class Costing {
 
   static Map<SagadiItemType, SagadiCosting> _convertToSagadiCostingMap(
       Map<String, dynamic> dynamicMap) {
-    Map<SagadiItemType, SagadiCosting> sagadiCostingMap = {};
-
-    dynamicMap.forEach((key, value) {
-      SagadiCosting costing = SagadiCosting.fromMap(value);
+    final sagadiCostingMap = <SagadiItemType, SagadiCosting>{};
+    for (final value in dynamicMap.values) {
+      final costing =
+          SagadiCosting.fromMap(Map<String, dynamic>.from(value as Map));
       sagadiCostingMap[costing.itemType] = costing;
-    });
-
+    }
     return sagadiCostingMap;
   }
 
   static Map<PartType, Map<DiamondType, DiamondCosting>>
       _convertToDiamondCostingMap(Map<String, dynamic> dynamicMap) {
-    Map<PartType, Map<DiamondType, DiamondCosting>> mainDiamondCostingMap = {};
-
+    final mainDiamondCostingMap =
+        <PartType, Map<DiamondType, DiamondCosting>>{};
     dynamicMap.forEach((partTypeKey, diamondCostingMap) {
-      Map<DiamondType, DiamondCosting> diamondCostingMap1 = {};
-      diamondCostingMap.forEach((diamondType, diamondCosting) {
-        DiamondCosting costing = DiamondCosting.fromMap(diamondCosting);
-        diamondCostingMap1[{
-          DiamondType.dmc.name: DiamondType.dmc,
-          DiamondType.shadow.name: DiamondType.shadow,
-          DiamondType.color.name: DiamondType.color,
-          DiamondType.jarkan.name: DiamondType.jarkan,
-        }[diamondType]!] = costing;
+      final diamonds = <DiamondType, DiamondCosting>{};
+      (diamondCostingMap as Map).forEach((diamondType, diamondCosting) {
+        diamonds[DiamondType.values.byName(diamondType as String)] =
+            DiamondCosting.fromMap(
+                Map<String, dynamic>.from(diamondCosting as Map));
       });
-      mainDiamondCostingMap[{
-        PartType.patti.name: PartType.patti,
-        PartType.buta.name: PartType.buta,
-      }[partTypeKey]!] = diamondCostingMap1;
+      mainDiamondCostingMap[PartType.values.byName(partTypeKey)] = diamonds;
     });
-
     return mainDiamondCostingMap;
   }
 

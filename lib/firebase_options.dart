@@ -63,8 +63,10 @@ class DefaultFirebaseOptions {
     messagingSenderId: '996876103970',
     projectId: 'costing-master',
     storageBucket: 'costing-master.appspot.com',
-    androidClientId: '996876103970-r207mu50mkkakja6tn98jrem2f1564fb.apps.googleusercontent.com',
-    iosClientId: '996876103970-c76pmn7gu5b3beshl43nr2keml7iidmg.apps.googleusercontent.com',
+    androidClientId:
+        '996876103970-r207mu50mkkakja6tn98jrem2f1564fb.apps.googleusercontent.com',
+    iosClientId:
+        '996876103970-c76pmn7gu5b3beshl43nr2keml7iidmg.apps.googleusercontent.com',
     iosBundleId: 'com.example.costingMaster',
   );
 

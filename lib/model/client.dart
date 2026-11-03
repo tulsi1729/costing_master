@@ -5,21 +5,35 @@ class Client {
   final String guid;
   final String createdBy;
 
+  /// Optional contact details; empty when not given.
+  final String phone;
+  final String city;
+
+  /// Last edit time in epoch milliseconds; null for clients never edited.
+  final int? updatedAt;
+
   Client({
     String? guid,
     required this.name,
     required this.createdBy,
+    this.phone = '',
+    this.city = '',
+    this.updatedAt,
   }) : guid = guid ?? const Uuid().v4();
 
   Client copyWith({
     String? name,
-    String? guid,
-    String? createdBy,
+    String? phone,
+    String? city,
+    int? updatedAt,
   }) {
     return Client(
+      guid: guid,
+      createdBy: createdBy,
       name: name ?? this.name,
-      guid: guid ?? this.guid,
-      createdBy: createdBy ?? this.createdBy,
+      phone: phone ?? this.phone,
+      city: city ?? this.city,
+      updatedAt: updatedAt ?? this.updatedAt,
     );
   }
 
@@ -28,6 +42,9 @@ class Client {
       'name': name,
       'guid': guid,
       'createdBy': createdBy,
+      'phone': phone,
+      'city': city,
+      'updatedAt': updatedAt,
     };
   }
 
@@ -36,11 +53,14 @@ class Client {
       name: map['name'] as String,
       guid: map['guid'] as String,
       createdBy: map['createdBy'] as String,
+      phone: map['phone'] as String? ?? '',
+      city: map['city'] as String? ?? '',
+      updatedAt: (map['updatedAt'] as num?)?.toInt(),
     );
   }
 
   @override
-  String toString() => 'Client(name: $name, guid: $guid, createdBy: $createdBy)';
+  String toString() => 'Client(name: $name, guid: $guid)';
 
   @override
   bool operator ==(covariant Client other) {
@@ -48,9 +68,13 @@ class Client {
 
     return other.name == name &&
         other.guid == guid &&
-        other.createdBy == createdBy;
+        other.createdBy == createdBy &&
+        other.phone == phone &&
+        other.city == city &&
+        other.updatedAt == updatedAt;
   }
 
   @override
-  int get hashCode => name.hashCode ^ guid.hashCode ^ createdBy.hashCode;
+  int get hashCode =>
+      Object.hash(name, guid, createdBy, phone, city, updatedAt);
 }

@@ -1,83 +1,100 @@
-import 'package:costing_master/auth/notifiers/auth_notifier.dart';
-import 'package:costing_master/auth/screens/login.dart';
+import 'dart:async';
+
 import 'package:costing_master/client/screen/client_listing.dart';
-import 'package:costing_master/model/user_model.dart';
+import 'package:costing_master/theme/app_theme.dart';
+import 'package:costing_master/widgets/brand_mark.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-class SplashScreen extends ConsumerStatefulWidget {
+
+/// Plays the brand animation, then opens the clients home. There is no
+/// login step: backup with Google is offered later, from inside the app.
+class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
 
   @override
-  ConsumerState<SplashScreen> createState() => _SplashScreenState();
+  State<SplashScreen> createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends ConsumerState<SplashScreen> {
-  bool _navigated = false;
-  bool _delayDone = false;
+class _SplashScreenState extends State<SplashScreen> {
+  /// The mark's animation plus a beat to see it finished.
+  static const _minimumShowTime = Duration(milliseconds: 1000);
 
   @override
   void initState() {
     super.initState();
+    _route();
+  }
 
-    Future.delayed(const Duration(seconds: 2), () {
-      if (mounted) {
-        setState(() {
-          _delayDone = true;
-        });
-      }
-    });
+  Future<void> _route() async {
+    await Future<void>.delayed(_minimumShowTime);
+    if (!mounted) return;
+    Navigator.of(context).pushReplacement(PageRouteBuilder(
+      transitionDuration: const Duration(milliseconds: 350),
+      pageBuilder: (_, __, ___) => const ClientListing(),
+      transitionsBuilder: (_, animation, __, child) =>
+          FadeTransition(opacity: animation, child: child),
+    ));
   }
 
   @override
   Widget build(BuildContext context) {
-    final authState = ref.watch(authProvider);
-
-    if (_delayDone && !_navigated) {
-      authState.when(
-        data: (user) {
-          _navigated = true;
-
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(
-                builder: (_) =>
-                    user != null
-                        ? const ClientListing()
-                        : const LoginScreen(),
+    return Scaffold(
+      body: DecoratedBox(
+        decoration: BoxDecoration(gradient: context.brand.heroGradient),
+        child: const Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Hero(
+                  tag: 'brand-mark',
+                  child: BrandMark(size: 132, animate: true)),
+              SizedBox(height: 24),
+              _FadeIn(
+                delay: Duration(milliseconds: 450),
+                child: BrandWordmark(color: Colors.white),
               ),
-            );
-          });
-        },
-        loading: () {
-          // stay on splash
-        },
-        error: (_, __) {
-          _navigated = true;
-
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(builder: (_) => const LoginScreen()),
-            );
-          });
-        },
-      );
-    }
-
-    return const Scaffold(
-      backgroundColor: Colors.white,
-      body: Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Image(
-              image: AssetImage('assets/icon/icon.png'),
-              height: 200,
-            ),
-            SizedBox(height: 20),
-          ],
+            ],
+          ),
         ),
+      ),
+    );
+  }
+}
+
+class _FadeIn extends StatefulWidget {
+  final Duration delay;
+  final Widget child;
+  const _FadeIn({required this.delay, required this.child});
+
+  @override
+  State<_FadeIn> createState() => _FadeInState();
+}
+
+class _FadeInState extends State<_FadeIn> {
+  bool _visible = false;
+  Timer? _timer;
+
+  @override
+  void initState() {
+    super.initState();
+    _timer = Timer(widget.delay, () => setState(() => _visible = true));
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedSlide(
+      offset: _visible ? Offset.zero : const Offset(0, 0.2),
+      duration: const Duration(milliseconds: 450),
+      curve: Curves.easeOutCubic,
+      child: AnimatedOpacity(
+        opacity: _visible ? 1 : 0,
+        duration: const Duration(milliseconds: 450),
+        child: widget.child,
       ),
     );
   }

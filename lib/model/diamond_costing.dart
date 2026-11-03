@@ -45,19 +45,12 @@ class DiamondCosting {
 
   factory DiamondCosting.fromMap(Map<String, dynamic> map) {
     return DiamondCosting(
-      diamondType: {
-        DiamondType.dmc.name: DiamondType.dmc,
-        DiamondType.shadow.name: DiamondType.shadow,
-        DiamondType.color.name: DiamondType.color,
-        DiamondType.jarkan.name: DiamondType.jarkan,
-      }[(map['diamondType'] as String)]!,
-      diamondRate: map['diamondRate'] as double,
-      diamondsPerPart: map['diamondsPerPart'] as int,
-      numbersOfPartsPerSari: map['numbersOfPartsPerSari'] as double,
-      partType: {
-        PartType.patti.name: PartType.patti,
-        PartType.buta.name: PartType.buta,
-      }[(map['partType'] as String)]!,
+      diamondType: DiamondType.values.byName(map['diamondType'] as String),
+      diamondRate: (map['diamondRate'] as num?)?.toDouble() ?? 0,
+      diamondsPerPart: (map['diamondsPerPart'] as num?)?.toInt() ?? 0,
+      numbersOfPartsPerSari:
+          (map['numbersOfPartsPerSari'] as num?)?.toDouble() ?? 0,
+      partType: PartType.values.byName(map['partType'] as String),
     );
   }
 

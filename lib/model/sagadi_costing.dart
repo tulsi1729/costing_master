@@ -34,13 +34,9 @@ class SagadiCosting {
 
   factory SagadiCosting.fromMap(Map<String, dynamic> map) {
     return SagadiCosting(
-      itemType: {
-        SagadiItemType.buta.name: SagadiItemType.buta,
-        SagadiItemType.less.name: SagadiItemType.less,
-        SagadiItemType.valiya.name: SagadiItemType.valiya,
-      }[(map['itemType'] as String)]!,
-      itemsCount: map['itemsCount'] as double,
-      chargePerItem: map['chargePerItem'] as double,
+      itemType: SagadiItemType.values.byName(map['itemType'] as String),
+      itemsCount: (map['itemsCount'] as num?)?.toDouble() ?? 0,
+      chargePerItem: (map['chargePerItem'] as num?)?.toDouble() ?? 0,
     );
   }
 
@@ -51,7 +47,7 @@ class SagadiCosting {
 
   @override
   String toString() =>
-      'SagadiCosting(i itemsCount: $itemsCount, chargePerItem: $chargePerItem)';
+      'SagadiCosting(itemType: $itemType, itemsCount: $itemsCount, chargePerItem: $chargePerItem)';
 
   @override
   bool operator ==(covariant SagadiCosting other) {
@@ -62,5 +58,6 @@ class SagadiCosting {
   }
 
   @override
-  int get hashCode => itemsCount.hashCode ^ chargePerItem.hashCode;
+  int get hashCode =>
+      itemType.hashCode ^ itemsCount.hashCode ^ chargePerItem.hashCode;
 }

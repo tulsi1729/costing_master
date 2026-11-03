@@ -24,8 +24,6 @@ class ConnectivityNotifier extends StreamNotifier<bool> {
   }
 }
 
-final connectivityProvider =
-    StreamNotifierProvider<ConnectivityNotifier, bool>(
+final connectivityProvider = StreamNotifierProvider<ConnectivityNotifier, bool>(
   ConnectivityNotifier.new,
 );
-

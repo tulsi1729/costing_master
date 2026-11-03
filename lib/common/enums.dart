@@ -1,17 +1,17 @@
 enum DiamondType {
-	dmc,
-	shadow,
-	jarkan,
-	color,
+  dmc,
+  shadow,
+  jarkan,
+  color,
 }
 
 enum PartType {
-	patti,
-	buta,
+  patti,
+  buta,
 }
 
 enum SagadiItemType {
-	buta,
-	less,
-	valiya,
+  buta,
+  less,
+  valiya,
 }
