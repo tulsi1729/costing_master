@@ -1,8 +1,6 @@
 # Regenerate with:
 #   flutter test tool/render_icons_test.dart && dart run flutter_launcher_icons
 # The source images are rendered from lib/widgets/brand_mark.dart. The
-# foreground has no inset: the letter is laid out for the visible part of
-# the layer and its bowl runs into the launcher's mask. The
 # monochrome layer lets Android 13+ tint the icon with the wallpaper colours
 # ("Themed icons").
 flutter_launcher_icons:
@@ -11,7 +9,6 @@ flutter_launcher_icons:
   min_sdk_android: 21
   adaptive_icon_background: "#001C3B"
   adaptive_icon_foreground: "assets/icon/icon_foreground.png"
-  adaptive_icon_foreground_inset: 0
   adaptive_icon_monochrome: "assets/icon/icon_monochrome.png"
   ios: true
   remove_alpha_ios: true

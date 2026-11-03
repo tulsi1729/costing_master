@@ -1,20 +1,23 @@
 import 'dart:ui' as ui;
 
+import 'package:costing_master/settings/settings_notifier.dart';
 import 'package:costing_master/theme/app_theme.dart';
 import 'package:costing_master/theme/motion.dart';
+import 'package:costing_master/widgets/network_thumb.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 /// The logo keeps its own gold whatever app theme is chosen.
 const brandGold = Color(0xFFC9A227);
 
-/// The app's mark: one bold ક on a rounded tile, in the spirit of a single
-/// letter app icon. Its crossbar is a gold baguette-cut diamond set into the
-/// letter, and the lower bowl runs off the bottom edge of the tile.
+/// The app's mark: a cut diamond, seen from the side, with ક set in its
+/// pavilion. Gold girdle and facets on the theme's hero colours.
 ///
 /// Drawn in code so it stays crisp at any size and costs no asset bytes; the
 /// launcher icons are rendered from it too (see `tool/render_icons_test.dart`).
-/// With [animate], the tile pops in, the letter rises, the diamond slides
-/// into its setting and a light sweeps across, in under a second.
+/// With [animate], the outline draws itself, the facets are cut one by one,
+/// the stone fills, ક rises into it and a sparkle and a light sweep finish
+/// it off.
 class BrandMark extends StatefulWidget {
   final double size;
   final bool animate;
@@ -22,7 +25,7 @@ class BrandMark extends StatefulWidget {
   const BrandMark({super.key, this.size = 96, this.animate = false});
 
   /// Length of the [animate] sequence.
-  static const animationDuration = Duration(milliseconds: 900);
+  static const animationDuration = Duration(milliseconds: 1900);
 
   @override
   State<BrandMark> createState() => _BrandMarkState();
@@ -73,40 +76,50 @@ class _BrandMarkState extends State<BrandMark>
   }
 }
 
+/// The business's own logo when one is uploaded, otherwise the app's mark.
+class AppLogo extends ConsumerWidget {
+  final double size;
+
+  const AppLogo({super.key, this.size = 32});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final logo = ref
+        .watch(settingsProvider.select((s) => s.value?.profile.logoUrl ?? ''));
+    if (logo.isEmpty) return BrandMark(size: size);
+    return ClipOval(
+      child: SizedBox.square(dimension: size, child: NetworkThumb(url: logo)),
+    );
+  }
+}
+
 /// Paints the brand mark at animation [progress] (1 is the finished mark).
 ///
-/// With [tile] false the letter is drawn without its tile, and its bowl
-/// overflows the bottom of the paint area instead of being clipped: the
-/// adaptive launcher icon layers rely on the launcher's mask for the bleed.
-/// With [fill] null it draws a one-colour silhouette in [gold], with the
-/// diamond's setting knocked out: the layer Android tints for themed icons.
+/// With [fill] null it draws only the outline, facets and letter in [gold]:
+/// the one-colour layer Android tints for themed launcher icons.
 class BrandMarkPainter extends CustomPainter {
   final double progress;
   final Color gold;
   final BrandColors? fill;
-  final bool tile;
 
   const BrandMarkPainter({
     this.progress = 1,
     this.gold = brandGold,
     required this.fill,
-    this.tile = true,
   });
 
   static const _ivory = Color(0xFFF7F1E1);
 
-  /// The letter's size and position: font units to the tile's side, and
-  /// the baseline's offset from the tile's top-left corner as fractions of
-  /// the side. The baseline sits below the tile, so the bowl bleeds off it.
-  static const _unit = 0.0007;
-  static const _originX = 0.092;
-  static const _originY = 1.05;
+  // The stone, as fractions of the side: the table (flat top), the girdle
+  // (widest line) and the culet (bottom point).
+  static const _tableY = 0.1, _tableLeft = 0.30, _tableRight = 0.70;
+  static const _girdleY = 0.34, _girdleLeft = 0.04, _girdleRight = 0.96;
+  static const _culet = Offset(0.5, 0.92);
 
-  /// The baguette diamond across the letter, in font units.
-  static const _gemTopLeft = Offset(40, 642);
-  static const _gemTopRight = Offset(1120, 848);
-  static const _gemBottomRight = Offset(1120, 592);
-  static const _gemBottomLeft = Offset(40, 386);
+  /// ક's size (side per font unit) and its baseline's position, as
+  /// fractions of the side; it sits wholly inside the pavilion.
+  static const _unit = 0.000245;
+  static const _letterTop = 0.385;
 
   /// [progress] within the part of the timeline from [begin] to [end].
   double _phase(double begin, double end, Curve curve) =>
@@ -115,211 +128,200 @@ class BrandMarkPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final s = size.shortestSide;
-    final c = size.center(Offset.zero);
+    final o = size.center(Offset.zero) - Offset(s / 2, s / 2);
+    Offset at(double x, double y) => o + Offset(x * s, y * s);
     final fill = this.fill;
-    final square = Rect.fromCenter(center: c, width: s, height: s);
-    final tilePath = Path()
-      ..addRRect(RRect.fromRectAndRadius(square, Radius.circular(s * 0.225)));
-    final withTile = tile && fill != null;
 
-    // Pops in slightly larger than its final size and settles.
-    final pop = _phase(0, 0.45, Curves.easeOutBack);
-    final scale = 0.85 + 0.15 * pop;
+    final tl = at(_tableLeft, _tableY), tr = at(_tableRight, _tableY);
+    final gl = at(_girdleLeft, _girdleY), gr = at(_girdleRight, _girdleY);
+    final culet = at(_culet.dx, _culet.dy);
+    // Points along the girdle and the table, left to right.
+    Offset girdle(double t) => Offset.lerp(gl, gr, t)!;
+    Offset table(double t) => Offset.lerp(tl, tr, t)!;
+    final outline = Path()
+      ..moveTo(tl.dx, tl.dy)
+      ..lineTo(tr.dx, tr.dy)
+      ..lineTo(gr.dx, gr.dy)
+      ..lineTo(culet.dx, culet.dy)
+      ..lineTo(gl.dx, gl.dy)
+      ..close();
+
+    // Settles in from slightly smaller as it is drawn.
+    final scale = 0.92 + 0.08 * _phase(0, 0.6, Curves.easeOutCubic);
+    final c = size.center(Offset.zero);
     canvas
       ..save()
       ..translate(c.dx, c.dy)
       ..scale(scale)
       ..translate(-c.dx, -c.dy);
 
-    if (withTile) {
-      final fillIn = _phase(0, 0.3, Curves.easeOut);
+    final fillIn = _phase(0.45, 0.7, Curves.easeOut);
+    if (fill != null && fillIn > 0) {
       canvas.drawPath(
-        tilePath,
+        outline,
         Paint()
-          ..shader = ui.Gradient.linear(square.topLeft, square.bottomRight, [
+          ..shader = ui.Gradient.linear(at(0, 0), at(1, 1), [
             fill.heroEnd.withValues(alpha: fillIn),
             fill.heroStart.withValues(alpha: fillIn),
           ]),
       );
-      // Satin light from the top-left corner.
-      canvas.drawPath(
-        tilePath,
-        Paint()
-          ..shader = ui.Gradient.linear(
-            square.topLeft,
-            Offset.lerp(square.topLeft, square.bottomRight, 0.6)!,
-            [
-              Colors.white.withValues(alpha: 0.12 * fillIn),
-              Colors.white.withValues(alpha: 0),
-            ],
-          ),
-      );
-      canvas
-        ..save()
-        ..clipPath(tilePath);
-    }
-
-    // The letter, in font units with y pointing up.
-    canvas
-      ..save()
-      ..translate(square.left + s * _originX, square.top + s * _originY)
-      ..scale(s * _unit, -s * _unit);
-
-    final rise = _phase(0.2, 0.6, Curves.easeOutCubic);
-    final slide = _phase(0.45, 0.8, Curves.easeOutCubic);
-    if (fill == null) {
-      _paintSilhouette(canvas, rise, slide);
-    } else {
-      _paintLetter(canvas, fill, rise, slide);
-    }
-    canvas.restore();
-
-    if (withTile) {
-      // One light sweep across the finished mark.
-      final sweep = _phase(0.7, 1, Curves.easeInOut);
-      if (sweep > 0 && sweep < 1) {
-        final x = c.dx - s + sweep * s * 2;
-        canvas.drawRect(
-          square,
+      // Crown facets catch the light in turn, like a cut stone.
+      final crown = [
+        tl, girdle(0.25), table(1 / 3), girdle(0.5), table(2 / 3),
+        girdle(0.75), tr, //
+      ];
+      for (var i = 0; i + 2 < crown.length; i++) {
+        canvas.drawPath(
+          Path()..addPolygon([crown[i], crown[i + 1], crown[i + 2]], true),
           Paint()
-            ..shader = ui.Gradient.linear(
-              Offset(x - s * 0.25, c.dy - s * 0.25),
-              Offset(x + s * 0.25, c.dy + s * 0.25),
-              [
-                Colors.white.withValues(alpha: 0),
-                Colors.white.withValues(alpha: 0.3),
-                Colors.white.withValues(alpha: 0),
-              ],
-              const [0, 0.5, 1],
-            ),
+            ..color = Colors.white
+                .withValues(alpha: (i.isEven ? 0.14 : 0.05) * fillIn),
         );
       }
-      canvas.restore();
-
-      // A hairline of gold around the tile.
-      canvas.drawPath(
-        tilePath,
-        Paint()
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = s * 0.008
-          ..color =
-              gold.withValues(alpha: 0.4 * _phase(0.1, 0.5, Curves.easeOut)),
-      );
+      canvas
+        ..drawPath(
+          Path()..addPolygon([gl, girdle(0.25), tl], true),
+          Paint()..color = Colors.white.withValues(alpha: 0.09 * fillIn),
+        )
+        ..drawPath(
+          Path()..addPolygon([gr, girdle(0.75), tr], true),
+          Paint()..color = Colors.black.withValues(alpha: 0.12 * fillIn),
+        )
+        // The pavilion's left half lit, its right half in shade.
+        ..drawPath(
+          Path()..addPolygon([gl, girdle(0.5), culet], true),
+          Paint()
+            ..shader = ui.Gradient.linear(gl, culet, [
+              Colors.white.withValues(alpha: 0.1 * fillIn),
+              Colors.white.withValues(alpha: 0),
+            ]),
+        )
+        ..drawPath(
+          Path()..addPolygon([girdle(0.5), gr, culet], true),
+          Paint()..color = Colors.black.withValues(alpha: 0.12 * fillIn),
+        );
     }
-    canvas.restore();
-  }
 
-  void _paintLetter(
-      Canvas canvas, BrandColors fill, double rise, double slide) {
-    if (rise > 0) {
-      canvas.drawPath(
-        _body.shift(Offset(0, -(1 - rise) * 120)),
-        Paint()
-          ..shader = ui.Gradient.linear(
-            const Offset(0, 1240),
-            const Offset(0, -30),
-            [Colors.white, _ivory]
-                .map((c) => c.withValues(alpha: rise))
-                .toList(),
-          ),
-      );
-    }
-    if (slide <= 0) return;
-
-    canvas
-      ..save()
-      ..translate(-(1 - slide) * 300, -(1 - slide) * 57);
-    final outline = _gemOutline();
-    // The setting: a dark gap that sinks the diamond into the letter.
-    canvas.drawPath(
-      outline,
-      Paint()
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 48
-        ..strokeJoin = StrokeJoin.round
-        ..color = fill.heroStart.withValues(alpha: slide),
-    );
-    final table = _gemTable();
-    Color shade(double t) => (t > 0
-            ? Color.lerp(gold, Colors.white, t)!
-            : Color.lerp(gold, Colors.black, -t)!)
-        .withValues(alpha: slide);
-    // Step-cut facets: light from above, shadow below.
+    // The facets are cut one after another.
     final facets = [
-      ([_gemTopLeft, _gemTopRight, table[1], table[0]], 0.45),
-      ([_gemTopRight, _gemBottomRight, table[2], table[1]], 0.22),
-      ([_gemBottomRight, _gemBottomLeft, table[3], table[2]], -0.28),
-      ([_gemBottomLeft, _gemTopLeft, table[0], table[3]], -0.1),
+      (girdle(0), girdle(1)),
+      (tl, girdle(0.25)),
+      (girdle(0.25), table(1 / 3)),
+      (table(1 / 3), girdle(0.5)),
+      (girdle(0.5), table(2 / 3)),
+      (table(2 / 3), girdle(0.75)),
+      (girdle(0.75), tr),
+      (girdle(0.25), culet),
+      (girdle(0.75), culet),
     ];
-    for (final (points, t) in facets) {
-      canvas.drawPath(
-        Path()..addPolygon(points, true),
-        Paint()..color = shade(t),
-      );
-    }
-    canvas.drawPath(
-      Path()..addPolygon(table, true),
-      Paint()
-        ..shader = ui.Gradient.linear(
-          const Offset(200, 700),
-          const Offset(1000, 450),
-          [shade(0.25), shade(0.75), shade(0.05), shade(0)],
-          const [0, 0.45, 0.55, 1],
-        ),
-    );
-    canvas.drawPath(
-      outline,
-      Paint()
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 6
-        ..color = Colors.white.withValues(alpha: 0.45 * slide),
-    );
-    canvas.restore();
-  }
-
-  /// One colour throughout: the setting and the diamond's table are cut out
-  /// so the crossbar still reads as a stone.
-  void _paintSilhouette(Canvas canvas, double rise, double slide) {
-    final colour = Paint()..color = gold.withValues(alpha: rise);
-    final cut = Paint()
-      ..blendMode = BlendMode.clear
+    final facetPaint = Paint()
       ..style = PaintingStyle.stroke
-      ..strokeJoin = StrokeJoin.round;
-    canvas
-      ..saveLayer(null, Paint())
-      ..drawPath(_body.shift(Offset(0, -(1 - rise) * 120)), colour);
-    if (slide > 0) {
-      final outline = _gemOutline();
+      ..strokeWidth = s * 0.012
+      ..strokeCap = StrokeCap.round
+      ..color = gold.withValues(alpha: fill == null ? 1 : 0.65);
+    for (var i = 0; i < facets.length; i++) {
+      final begin = 0.25 + i * 0.035;
+      final t = _phase(begin, begin + 0.12, Curves.easeInOut);
+      if (t <= 0) continue;
+      final (a, b) = facets[i];
+      canvas.drawLine(a, Offset.lerp(a, b, t)!, facetPaint);
+    }
+
+    // The gold outline traces itself.
+    final trace = _phase(0, 0.35, Curves.easeInOutCubic);
+    final edge = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = s * 0.035
+      ..strokeJoin = StrokeJoin.round
+      ..strokeCap = StrokeCap.round
+      ..color = gold;
+    if (trace >= 1) {
+      canvas.drawPath(outline, edge);
+    } else if (trace > 0) {
+      for (final metric in outline.computeMetrics()) {
+        canvas.drawPath(metric.extractPath(0, metric.length * trace), edge);
+      }
+    }
+
+    // ક rises into the pavilion.
+    final letter = _phase(0.6, 0.8, Curves.easeOut);
+    if (letter > 0) {
+      final u = s * _unit;
       canvas
         ..save()
-        ..translate(-(1 - slide) * 300, -(1 - slide) * 57)
-        ..drawPath(outline, cut..strokeWidth = 48)
-        ..drawPath(outline, Paint()..color = gold.withValues(alpha: slide))
-        ..drawPath(Path()..addPolygon(_gemTable(), true), cut..strokeWidth = 20)
+        ..translate(o.dx + s * 0.5 - u * 583,
+            o.dy + s * _letterTop + u * 1239 + (1 - letter) * s * 0.05)
+        ..scale(u, -u)
+        ..drawPath(
+          _letter,
+          Paint()
+            ..color = (fill == null ? gold : _ivory).withValues(alpha: letter),
+        )
         ..restore();
+    }
+
+    if (fill != null) {
+      // One light sweep across the stone, then a sparkle on the table.
+      final sweep = _phase(0.78, 1, Curves.easeInOut);
+      if (sweep > 0 && sweep < 1) {
+        final x = o.dx - s * 0.5 + sweep * s * 2;
+        canvas
+          ..save()
+          ..clipPath(outline)
+          ..drawRect(
+            o & Size.square(s),
+            Paint()
+              ..shader = ui.Gradient.linear(
+                Offset(x - s * 0.25, o.dy),
+                Offset(x + s * 0.25, o.dy + s * 0.5),
+                [
+                  Colors.white.withValues(alpha: 0),
+                  Colors.white.withValues(alpha: 0.35),
+                  Colors.white.withValues(alpha: 0),
+                ],
+                const [0, 0.5, 1],
+              ),
+          )
+          ..restore();
+      }
+      final twinkle = _phase(0.82, 1, Curves.linear);
+      if (twinkle > 0) {
+        // Flares, then settles to a small glint that stays.
+        final glow = twinkle < 0.5
+            ? Curves.easeOut.transform(twinkle * 2)
+            : 1 - 0.45 * Curves.easeIn.transform((twinkle - 0.5) * 2);
+        _sparkle(canvas, tr + Offset(-s * 0.02, s * 0.005), s * 0.09 * glow);
+      }
     }
     canvas.restore();
   }
 
-  static Path _gemOutline() => Path()
-    ..addPolygon(
-        [_gemTopLeft, _gemTopRight, _gemBottomRight, _gemBottomLeft], true);
-
-  /// The flat top of the stone, inset from the outline: top-left, top-right,
-  /// bottom-right, bottom-left.
-  static List<Offset> _gemTable() {
-    const dx = 70.0, dy = 52.0;
-    return [
-      _gemTopLeft + const Offset(dx, -dy),
-      _gemTopRight + const Offset(-dx, -dy),
-      _gemBottomRight + const Offset(-dx, dy),
-      _gemBottomLeft + const Offset(dx, dy),
-    ];
+  /// A four-pointed star of [radius] centred on [c].
+  static void _sparkle(Canvas canvas, Offset c, double radius) {
+    final r = radius, w = radius * 0.18;
+    final star = Path()
+      ..moveTo(c.dx, c.dy - r)
+      ..quadraticBezierTo(c.dx + w, c.dy - w, c.dx + r, c.dy)
+      ..quadraticBezierTo(c.dx + w, c.dy + w, c.dx, c.dy + r)
+      ..quadraticBezierTo(c.dx - w, c.dy + w, c.dx - r, c.dy)
+      ..quadraticBezierTo(c.dx - w, c.dy - w, c.dx, c.dy - r)
+      ..close();
+    canvas
+      ..drawCircle(
+        c,
+        r * 0.6,
+        Paint()
+          ..shader = ui.Gradient.radial(c, r * 0.6, [
+            Colors.white.withValues(alpha: 0.5),
+            Colors.white.withValues(alpha: 0),
+          ]),
+      )
+      ..drawPath(star, Paint()..color = Colors.white);
   }
 
-  /// ક without its crossbar: the upper hook and the lower bowl, from Anek
-  /// Gujarati ExtraBold (SIL Open Font License), in font units.
-  static final Path _body = Path()
+  /// ક from Anek Gujarati ExtraBold (SIL Open Font License), in font units
+  /// with y pointing up: the upper hook, the lower bowl and the crossbar.
+  static final Path _letter = Path()
     ..moveTo(459, 658)
     ..quadraticBezierTo(353, 660, 274, 689)
     ..quadraticBezierTo(195, 718, 152, 776)
@@ -355,14 +357,22 @@ class BrandMarkPainter extends CustomPainter {
     ..lineTo(1049, 297)
     ..quadraticBezierTo(1049, 131, 912, 51)
     ..quadraticBezierTo(775, -29, 537, -29)
+    ..close()
+    // The crossbar.
+    ..moveTo(50, 371)
+    ..lineTo(50, 658)
+    ..lineTo(511, 715)
+    ..lineTo(705, 487)
+    ..close()
+    ..moveTo(440, 734)
+    ..lineTo(1116, 861)
+    ..lineTo(1116, 578)
+    ..lineTo(536, 507)
     ..close();
 
   @override
   bool shouldRepaint(BrandMarkPainter old) =>
-      old.progress != progress ||
-      old.gold != gold ||
-      old.fill != fill ||
-      old.tile != tile;
+      old.progress != progress || old.gold != gold || old.fill != fill;
 }
 
 /// "કોસ્ટિંગ માસ્ટર" with a small English line underneath.

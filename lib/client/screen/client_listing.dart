@@ -142,7 +142,7 @@ class _ClientListingState extends ConsumerState<ClientListing> {
               pinned: true,
               leading: const Padding(
                 padding: EdgeInsets.only(left: 12),
-                child: BrandMark(size: 32),
+                child: AppLogo(size: 32),
               ),
               leadingWidth: 52,
               title: Column(
