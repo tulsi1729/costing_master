@@ -72,22 +72,23 @@ jobs:
           channel: stable
           cache: true
 
-      - name: Restore signing key and Firebase config
+      # Secrets come from krupal4/all-apps-creds costing_master/secrets.env:
+      #   gh secret set -f secrets.env -R learn-code-3/costing_master
+      # (google-services.json and firebase_options.dart are committed.)
+      - name: Restore signing key and Play service account
         env:
           KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
           KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
           KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
           KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
-          GOOGLE_SERVICES_JSON_BASE64: ${{ secrets.GOOGLE_SERVICES_JSON_BASE64 }}
-          FIREBASE_OPTIONS_DART_BASE64: ${{ secrets.FIREBASE_OPTIONS_DART_BASE64 }}
+          PLAY_SERVICE_ACCOUNT_JSON_BASE64: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON_BASE64 }}
         run: |
-          for v in KEYSTORE_BASE64 KEYSTORE_PASSWORD KEY_PASSWORD KEY_ALIAS GOOGLE_SERVICES_JSON_BASE64 FIREBASE_OPTIONS_DART_BASE64; do
+          for v in KEYSTORE_BASE64 KEYSTORE_PASSWORD KEY_PASSWORD KEY_ALIAS PLAY_SERVICE_ACCOUNT_JSON_BASE64; do
             [ -n "${!v}" ] || { echo "::error::GitHub secret $v is not set"; MISSING=1; }
           done
           [ -z "${MISSING:-}" ] || exit 1
           echo "$KEYSTORE_BASE64" | base64 -d > android/app/upload-keystore.jks
-          echo "$GOOGLE_SERVICES_JSON_BASE64" | base64 -d > android/app/google-services.json
-          echo "$FIREBASE_OPTIONS_DART_BASE64" | base64 -d > lib/firebase_options.dart
+          echo "$PLAY_SERVICE_ACCOUNT_JSON_BASE64" | base64 -d > /tmp/play-sa.json
           cat > android/key.properties <<EOF
           storePassword=$KEYSTORE_PASSWORD
           keyPassword=$KEY_PASSWORD
@@ -114,7 +115,7 @@ jobs:
       - name: Upload to Play Store (production)
         uses: r0adkll/upload-google-play@v1
         with:
-          serviceAccountJsonPlainText: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
+          serviceAccountJson: /tmp/play-sa.json
           packageName: com.rightdevs.costing_master
           releaseFiles: build/app/outputs/bundle/release/app-release.aab
           mappingFile: build/app/outputs/mapping/release/mapping.txt
