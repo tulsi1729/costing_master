@@ -119,7 +119,7 @@ jobs:
           packageName: com.rightdevs.costing_master
           releaseFiles: build/app/outputs/bundle/release/app-release.aab
           mappingFile: build/app/outputs/mapping/release/mapping.txt
-          track: production
+          tracks: production
           status: completed
           whatsNewDirectory: /tmp/whatsnew
 

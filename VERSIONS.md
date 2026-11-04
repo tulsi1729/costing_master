@@ -21,7 +21,7 @@ Last verified: 2026-10-24, debug build running on an Android 14 device (Samsung 
 | Kotlin (`org.jetbrains.kotlin.android`)    | **2.2.20**       | `android/settings.gradle`                          |
 | Google Services plugin                     | **4.4.2**        | `android/settings.gradle`                          |
 | compileSdk                                 | **36**           | `android/app/build.gradle`                         |
-| targetSdk                                  | **35**           | `android/app/build.gradle`                         |
+| targetSdk                                  | **36**                     | `android/app/build.gradle`                         |
 | minSdk                                     | `flutter.minSdkVersion` | `android/app/build.gradle`                  |
 | NDK                                        | **27.0.12077973** | `android/app/build.gradle`                        |
 
