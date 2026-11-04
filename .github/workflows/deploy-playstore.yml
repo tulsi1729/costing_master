@@ -9,12 +9,57 @@ concurrency:
   group: playstore-deploy
   cancel-in-progress: false
 
+permissions:
+  contents: write   # to push the version bump + CHANGELOG commit back to main
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
     timeout-minutes: 45
     steps:
+      # Check out the tip of main (not the triggering SHA) with full history, so
+      # a queued run sees the version bump committed by the previous run.
       - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      # Patch-bump the version name, set versionCode, and build the notes from
+      # commit subjects since the last release commit.
+      - name: Bump version and write changelog
+        id: version
+        env:
+          VERSION_CODE_OFFSET: ${{ vars.VERSION_CODE_OFFSET || 21 }}
+        run: |
+          set -euo pipefail
+          CURRENT=$(grep -E '^version:' pubspec.yaml | sed -E 's/version:[[:space:]]*//; s/\+.*//')
+          IFS=. read -r MAJOR MINOR PATCH <<< "$CURRENT"
+          NAME="$MAJOR.$MINOR.$((PATCH + 1))"
+          CODE=$((GITHUB_RUN_NUMBER + VERSION_CODE_OFFSET))
+          sed -i -E "s/^version:.*/version: $NAME+$CODE/" pubspec.yaml
+
+          LAST=$(git log -1 --format=%H --grep='^chore(release):' || true)
+          RANGE=${LAST:+$LAST..HEAD}
+          RANGE=${RANGE:-HEAD~1..HEAD}
+          NOTES=$(git log "$RANGE" --no-merges --format='- %s' \
+                    --invert-grep --grep='^chore(release):')
+          NOTES=${NOTES:-- Maintenance release}
+          echo "Release $NAME ($CODE):"; echo "$NOTES"
+
+          { echo "## $NAME ($CODE) - $(date -u +%Y-%m-%d)"; echo; echo "$NOTES"; echo; } > /tmp/entry.md
+          if [ -f CHANGELOG.md ]; then
+            tail -n +2 CHANGELOG.md > /tmp/rest.md
+          else
+            : > /tmp/rest.md
+          fi
+          { echo "# Changelog"; echo; cat /tmp/entry.md; sed '/./,$!d' /tmp/rest.md; } > CHANGELOG.md
+
+          # Play Store "What's new" (max 500 chars per language)
+          mkdir -p /tmp/whatsnew
+          printf '%s' "$NOTES" | head -c 500 > /tmp/whatsnew/whatsnew-en-US
+
+          echo "name=$NAME" >> "$GITHUB_OUTPUT"
+          echo "code=$CODE" >> "$GITHUB_OUTPUT"
 
       - uses: actions/setup-java@v4
         with:
@@ -50,14 +95,10 @@ jobs:
 
       # versionCode = run number + offset, so every run is higher than the last
       # one on Play. Set the repo variable VERSION_CODE_OFFSET to the current
-      # highest versionCode on Play (defaults to 21, the pubspec value).
+      # highest versionCode on Play (defaults to 21). Name/code come from the
+      # pubspec edited above.
       - name: Build release app bundle
-        env:
-          VERSION_CODE_OFFSET: ${{ vars.VERSION_CODE_OFFSET || 21 }}
-        run: |
-          BUILD_NUMBER=$((GITHUB_RUN_NUMBER + VERSION_CODE_OFFSET))
-          echo "versionCode: $BUILD_NUMBER"
-          flutter build appbundle --release --build-number=$BUILD_NUMBER
+        run: flutter build appbundle --release
 
       - name: Upload to Play Store (production)
         uses: r0adkll/upload-google-play@v1
@@ -68,3 +109,16 @@ jobs:
           mappingFile: build/app/outputs/mapping/release/mapping.txt
           track: production
           status: completed
+          whatsNewDirectory: /tmp/whatsnew
+
+      # Only after Play accepted the upload. Pushes made with GITHUB_TOKEN don't
+      # trigger workflows, so this can't loop; [skip ci] is a second guard.
+      - name: Commit version bump and changelog
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add pubspec.yaml CHANGELOG.md
+          git commit -m "chore(release): ${{ steps.version.outputs.name }}+${{ steps.version.outputs.code }} [skip ci]"
+          git pull --rebase origin main
+          git push origin HEAD:main
