@@ -10,6 +10,9 @@ account JSON (same one CI uses: PLAY_SERVICE_ACCOUNT_JSON).
   # replace the hi-res icon (resized to 512x512 if Pillow is installed)
   python3 tool/play_listing.py --key sa.json upload icon assets/icon/icon.png
 
+  # set title/descriptions + default language from tool/play_listing_text.json
+  python3 tool/play_listing.py --key sa.json text tool/play_listing_text.json
+
   # replace phone screenshots (in this order)
   python3 tool/play_listing.py --key sa.json upload phoneScreenshots screenshots/*.png
 
@@ -100,6 +103,8 @@ def main():
     p.add_argument("--dry-run", action="store_true", help="don't commit the edit")
     sub = p.add_subparsers(dest="cmd", required=True)
     sub.add_parser("list")
+    tx = sub.add_parser("text")
+    tx.add_argument("file", help="JSON: defaultLanguage, languages, title, shortDescription, fullDescription")
     up = sub.add_parser("upload")
     up.add_argument("type")
     up.add_argument("files", nargs="+")
@@ -120,7 +125,32 @@ def main():
         play.call("DELETE", f"{API}/edits/{edit}")
         return
 
-    blobs = [png_bytes(f, args.type) for f in args.files]
+    if args.cmd == "text":
+        t = json.load(open(args.file))
+        full = t["fullDescription"]
+        body = {"title": t["title"], "shortDescription": t["shortDescription"],
+                "fullDescription": "\n".join(full) if isinstance(full, list) else full}
+        video = next((l.get("video") for l in play.call("GET", f"{API}/edits/{edit}/listings").get("listings", [])
+                      if l.get("video")), None)
+        if video:
+            body["video"] = video
+        graphics = {k: [(f, png_bytes(f, k)) for f in v] for k, v in t.get("graphics", {}).items()}
+        for lang in args.lang or t["languages"]:
+            play.call("PUT", f"{API}/edits/{edit}/listings/{lang}",
+                      json.dumps(dict(body, language=lang)).encode())
+            print(f"  {lang}: {t['title']}")
+            for kind, items in graphics.items():
+                play.call("DELETE", f"{API}/edits/{edit}/listings/{lang}/{kind}")
+                for f, blob in items:
+                    play.call("POST", f"{UPLOAD}/edits/{edit}/listings/{lang}/{kind}?uploadType=media",
+                              blob, "image/png")
+                print(f"    {kind}: {len(items)}")
+        if t.get("defaultLanguage"):
+            play.call("PATCH", f"{API}/edits/{edit}/details",
+                      json.dumps({"defaultLanguage": t["defaultLanguage"]}).encode())
+            print("  default language:", t["defaultLanguage"])
+        langs = []  # nothing to upload
+    blobs = [] if args.cmd == "text" else [png_bytes(f, args.type) for f in args.files]
     for lang in langs:
         play.call("DELETE", f"{API}/edits/{edit}/listings/{lang}/{args.type}")
         for f, blob in zip(args.files, blobs):
