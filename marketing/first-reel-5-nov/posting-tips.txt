@@ -1,0 +1,9 @@
+Reel 1 – posting checklist
+
+1. Instagram → + → Reel → pick reel.mp4 from this folder.
+2. Add a trending song, volume ~10-15% (keep the Gujarati voice clear).
+3. Cover: choose cover.png (or the first 2 seconds frame).
+4. Paste caption.txt as the caption.
+5. Bio link: https://play.google.com/store/apps/details?id=com.rightdevs.costing_master
+6. After posting, comment: "લિંક બાયોમાં 👆" and pin it.
+7. Share to your Story and to Surat karkhana / vepari WhatsApp groups.
