@@ -132,6 +132,7 @@ def main():
                 "fullDescription": "\n".join(full) if isinstance(full, list) else full}
         video = next((l.get("video") for l in play.call("GET", f"{API}/edits/{edit}/listings").get("listings", [])
                       if l.get("video")), None)
+        video = t.get("video") or video
         if video:
             body["video"] = video
         graphics = {k: [(f, png_bytes(f, k)) for f in v] for k, v in t.get("graphics", {}).items()}
