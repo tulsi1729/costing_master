@@ -54,9 +54,17 @@ jobs:
           fi
           { echo "# Changelog"; echo; cat /tmp/entry.md; sed '/./,$!d' /tmp/rest.md; } > CHANGELOG.md
 
-          # Play Store "What's new" (max 500 chars per language)
+          # Play Store "What's new" is user-facing, so it never comes from
+          # commit subjects: it is the hand-written .github/whatsnew/whatsnew-<lang>
+          # files (max 500 chars each), with a plain fallback.
           mkdir -p /tmp/whatsnew
-          printf '%s' "$NOTES" | head -c 500 > /tmp/whatsnew/whatsnew-en-US
+          if ls .github/whatsnew/whatsnew-* >/dev/null 2>&1; then
+            for f in .github/whatsnew/whatsnew-*; do
+              head -c 500 "$f" > "/tmp/whatsnew/$(basename "$f")"
+            done
+          else
+            printf '%s' 'Small improvements.' > /tmp/whatsnew/whatsnew-en-US
+          fi
 
           echo "name=$NAME" >> "$GITHUB_OUTPUT"
           echo "code=$CODE" >> "$GITHUB_OUTPUT"
@@ -73,7 +81,7 @@ jobs:
           cache: true
 
       # Secrets come from krupal4/all-apps-creds costing_master/secrets.env:
-      #   gh secret set -f secrets.env -R learn-code-3/costing_master
+      #   gh secret set -f secrets.env -R tulsi1729/costing_master
       # (google-services.json and firebase_options.dart are committed.)
       - name: Restore signing key and Play service account
         env:
