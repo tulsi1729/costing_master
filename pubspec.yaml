@@ -3,7 +3,7 @@ description: "Saree embroidery costing calculator for Gujarati workshops."
 publish_to: 'none'
 
 # versionName+versionCode for Android, CFBundleShortVersionString+CFBundleVersion for iOS.
-version: 1.0.2+28
+version: 1.0.3+33
 
 environment:
   sdk: '>=3.3.0 <4.0.0'
