@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.0.4 (34) - 2026-11-19
+
+- Play What's new: new વેપારી quote look and description field
+- વેપારી quote: full photo card with name, design, description and price
+
 ## 1.0.3 (33) - 2026-11-11
 
 - CI: Play "What's new" from hand-written text, not commit messages
