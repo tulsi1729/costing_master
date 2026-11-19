@@ -114,6 +114,9 @@ class CostingDraftNotifier extends Notifier<CostingDraft> {
   void setSariName(String name) =>
       state = state._with(_c.copyWith(sariName: name));
 
+  void setDescription(String text) =>
+      state = state._with(_c.copyWith(description: text));
+
   void setDesignNo(int? designNo) {
     // copyWith cannot clear a nullable field, so set it on the fresh copy.
     state = state._with(_c.copyWith()..designNo = designNo);
@@ -182,6 +185,7 @@ class CostingDraftNotifier extends Notifier<CostingDraft> {
   /// The costing as it should be stored, with totals from [CostingCalculator].
   Costing toSave() => CostingCalculator.withTotals(_c.copyWith(
         sariName: _c.sariName.trim(),
+        description: _c.description.trim(),
         updatedAt: DateTime.now().millisecondsSinceEpoch,
       ));
 

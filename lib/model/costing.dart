@@ -12,6 +12,9 @@ class Costing {
   int? designNo;
   String clientGuid;
   String sariName;
+
+  /// Optional note shown on the વેપારી quote; empty when not given.
+  String description;
   String imageUrl;
   double sheetBharvana;
   double lessFiting;
@@ -37,6 +40,7 @@ class Costing {
     this.designNo,
     required this.clientGuid,
     required this.sariName,
+    this.description = '',
     required this.imageUrl,
     required this.sheetBharvana,
     required this.lessFiting,
@@ -60,6 +64,7 @@ class Costing {
     int? designNo,
     String? clientGuid,
     String? sariName,
+    String? description,
     String? imageUrl,
     double? sheetBharvana,
     double? lessFiting,
@@ -82,6 +87,7 @@ class Costing {
       designNo: designNo ?? this.designNo,
       clientGuid: clientGuid ?? this.clientGuid,
       sariName: sariName ?? this.sariName,
+      description: description ?? this.description,
       imageUrl: imageUrl ?? this.imageUrl,
       sheetBharvana: sheetBharvana ?? this.sheetBharvana,
       lessFiting: lessFiting ?? this.lessFiting,
@@ -109,6 +115,7 @@ class Costing {
       'designNo': designNo,
       'clientGuid': clientGuid,
       'sariName': sariName,
+      'description': description,
       'imageUrl': imageUrl,
       'sheetBharvana': sheetBharvana,
       'lessFiting': lessFiting,
@@ -138,6 +145,7 @@ class Costing {
       designNo: (map['designNo'] as num?)?.toInt(),
       clientGuid: map['clientGuid'] as String,
       sariName: map['sariName'] as String? ?? '',
+      description: map['description'] as String? ?? '',
       imageUrl: map['imageUrl'] as String? ?? '',
       sheetBharvana: _toDouble(map['sheetBharvana']),
       lessFiting: _toDouble(map['lessFiting']),
@@ -185,6 +193,7 @@ class Costing {
         other.designNo == designNo &&
         other.clientGuid == clientGuid &&
         other.sariName == sariName &&
+        other.description == description &&
         other.imageUrl == imageUrl &&
         other.sheetBharvana == sheetBharvana &&
         other.lessFiting == lessFiting &&
@@ -205,6 +214,7 @@ class Costing {
         designNo.hashCode ^
         clientGuid.hashCode ^
         sariName.hashCode ^
+        description.hashCode ^
         imageUrl.hashCode ^
         sheetBharvana.hashCode ^
         lessFiting.hashCode ^

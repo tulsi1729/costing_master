@@ -25,6 +25,7 @@ class DesignHeader extends ConsumerStatefulWidget {
 class _DesignHeaderState extends ConsumerState<DesignHeader> {
   late final TextEditingController _name;
   late final TextEditingController _designNo;
+  late final TextEditingController _description;
   File? _localPreview;
   double? _uploadProgress;
 
@@ -34,12 +35,14 @@ class _DesignHeaderState extends ConsumerState<DesignHeader> {
     final costing = ref.read(widget.draft).costing;
     _name = TextEditingController(text: costing.sariName);
     _designNo = TextEditingController(text: costing.designNo?.toString() ?? '');
+    _description = TextEditingController(text: costing.description);
   }
 
   @override
   void dispose() {
     _name.dispose();
     _designNo.dispose();
+    _description.dispose();
     super.dispose();
   }
 
@@ -129,50 +132,71 @@ class _DesignHeaderState extends ConsumerState<DesignHeader> {
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(14),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        child: Column(
           children: [
-            _PhotoTile(
-              imageUrl: imageUrl,
-              localPreview: _localPreview,
-              progress: _uploadProgress,
-              onTap: _uploadProgress == null ? _choosePhoto : null,
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _PhotoTile(
+                  imageUrl: imageUrl,
+                  localPreview: _localPreview,
+                  progress: _uploadProgress,
+                  onTap: _uploadProgress == null ? _choosePhoto : null,
+                ),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    children: [
+                      TextField(
+                        controller: _name,
+                        textCapitalization: TextCapitalization.words,
+                        textInputAction: TextInputAction.next,
+                        onChanged: ref.read(widget.draft.notifier).setSariName,
+                        style: const TextStyle(
+                            fontSize: 17, fontWeight: FontWeight.w700),
+                        decoration: InputDecoration(
+                          labelText: 'સાડીનું નામ *',
+                          hintText: 'Sari name',
+                          floatingLabelBehavior: FloatingLabelBehavior.always,
+                          errorText:
+                              nameMissing ? 'નામ જરૂરી છે · Required' : null,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      TextField(
+                        controller: _designNo,
+                        keyboardType: TextInputType.number,
+                        textInputAction: TextInputAction.next,
+                        inputFormatters: [
+                          FilteringTextInputFormatter.digitsOnly
+                        ],
+                        onChanged: (text) => ref
+                            .read(widget.draft.notifier)
+                            .setDesignNo(int.tryParse(text)),
+                        decoration: const InputDecoration(
+                          labelText: 'ડિઝાઇન નંબર',
+                          hintText: 'Design no.',
+                          prefixText: '# ',
+                          floatingLabelBehavior: FloatingLabelBehavior.always,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
-            const SizedBox(width: 14),
-            Expanded(
-              child: Column(
-                children: [
-                  TextField(
-                    controller: _name,
-                    textCapitalization: TextCapitalization.words,
-                    textInputAction: TextInputAction.next,
-                    onChanged: ref.read(widget.draft.notifier).setSariName,
-                    style: const TextStyle(
-                        fontSize: 17, fontWeight: FontWeight.w700),
-                    decoration: InputDecoration(
-                      labelText: 'સાડીનું નામ *',
-                      hintText: 'Sari name',
-                      floatingLabelBehavior: FloatingLabelBehavior.always,
-                      errorText: nameMissing ? 'નામ જરૂરી છે · Required' : null,
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  TextField(
-                    controller: _designNo,
-                    keyboardType: TextInputType.number,
-                    textInputAction: TextInputAction.next,
-                    inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                    onChanged: (text) => ref
-                        .read(widget.draft.notifier)
-                        .setDesignNo(int.tryParse(text)),
-                    decoration: const InputDecoration(
-                      labelText: 'ડિઝાઇન નંબર',
-                      hintText: 'Design no.',
-                      prefixText: '# ',
-                      floatingLabelBehavior: FloatingLabelBehavior.always,
-                    ),
-                  ),
-                ],
+            const SizedBox(height: 12),
+            TextField(
+              controller: _description,
+              minLines: 1,
+              maxLines: 2,
+              textInputAction: TextInputAction.done,
+              inputFormatters: [LengthLimitingTextInputFormatter(120)],
+              onChanged: ref.read(widget.draft.notifier).setDescription,
+              decoration: const InputDecoration(
+                labelText: 'વર્ણન (વૈકલ્પિક)',
+                hintText: 'Description – shown to the વેપારી',
+                floatingLabelBehavior: FloatingLabelBehavior.always,
               ),
             ),
           ],

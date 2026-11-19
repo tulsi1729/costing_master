@@ -89,20 +89,35 @@ class _QuoteScreenState extends ConsumerState<QuoteScreen> {
     return box == null ? null : box.localToGlobal(Offset.zero) & box.size;
   }
 
+  /// Waits for the વેપારી card's photo before capturing, so a photo that is
+  /// still downloading is never exported as a blank background.
+  Future<Uint8List> _capture() async {
+    final style =
+        ref.read(settingsProvider).value?.quoteStyle ?? const QuoteStyle();
+    final photo =
+        _mode == QuoteMode.customer ? quotePhoto(widget.costing, style) : null;
+    if (photo != null) {
+      await precacheImage(photo, context, onError: (_, __) {})
+          .timeout(const Duration(seconds: 20), onTimeout: () {});
+      await WidgetsBinding.instance.endOfFrame;
+    }
+    return QuoteExport.capture(_boundary);
+  }
+
   Future<void> _share() => _run(_Busy.share, () async {
-        final png = await QuoteExport.capture(_boundary);
+        final png = await _capture();
         await QuoteExport.share(png,
             fileName: _fileName, text: _shareText, origin: _shareOrigin);
       });
 
   Future<void> _sharePdf() => _run(_Busy.pdf, () async {
-        final png = await QuoteExport.capture(_boundary);
+        final png = await _capture();
         await QuoteExport.sharePdf(png,
             fileName: _fileName, text: _shareText, origin: _shareOrigin);
       });
 
   Future<void> _saveToGallery() => _run(_Busy.save, () async {
-        final png = await QuoteExport.capture(_boundary);
+        final png = await _capture();
         final ok = await QuoteExport.saveToGallery(png, name: _fileName);
         if (!mounted) return;
         unawaited(HapticFeedback.lightImpact());

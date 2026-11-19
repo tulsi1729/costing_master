@@ -3,6 +3,7 @@ import 'package:costing_master/domain/labels.dart';
 import 'package:costing_master/domain/money.dart';
 import 'package:costing_master/model/costing.dart';
 import 'package:costing_master/settings/app_settings.dart';
+import 'package:costing_master/storage/image_storage.dart';
 import 'package:costing_master/theme/app_theme.dart';
 import 'package:costing_master/widgets/brand_mark.dart';
 import 'package:costing_master/widgets/network_thumb.dart';
@@ -47,7 +48,15 @@ class QuoteCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Theme(
       data: AppTheme.light(AppColor.navy),
-      child: Builder(builder: (context) => _build(context)),
+      child: mode == QuoteMode.customer
+          ? _VepariCard(
+              costing: costing,
+              clientName: clientName,
+              profile: profile,
+              style: style,
+              date: date,
+            )
+          : Builder(builder: (context) => _build(context)),
     );
   }
 
@@ -148,6 +157,238 @@ class QuoteCard extends StatelessWidget {
             if (style.showFooter) const _GrowthFooter(),
           ],
         ),
+      ),
+    );
+  }
+}
+
+/// The full-size design photo for the વેપારી quote, or null when there is
+/// none or it is switched off. Decoded at full size (not shrunk like
+/// [NetworkThumb]) so a cropped photo stays sharp in the export.
+ImageProvider? quotePhoto(Costing costing, QuoteStyle style) {
+  final url = costing.imageUrl;
+  if (!style.showPhoto || url.isEmpty || url == 'null') return null;
+  return LocalImages.isLocal(url)
+      ? FileImage(LocalImages.file(url)) as ImageProvider
+      : NetworkImage(url);
+}
+
+/// What the વેપારી gets: the design photo fills the card and only the
+/// essentials sit on top. No line items, so vatav and profit never show.
+class _VepariCard extends StatelessWidget {
+  final Costing costing;
+  final String clientName;
+  final BusinessProfile profile;
+  final QuoteStyle style;
+  final DateTime date;
+
+  const _VepariCard({
+    required this.costing,
+    required this.clientName,
+    required this.profile,
+    required this.style,
+    required this.date,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final digits = style.gujaratiDigits;
+    String d(String s) => digits ? toGujaratiDigits(s) : s;
+    final price = formatRupees(CostingCalculator.compute(costing).grandTotal,
+        gujaratiDigits: digits);
+    final accent = style.accent;
+    final photo = quotePhoto(costing, style);
+    const shadow = [Shadow(blurRadius: 6, color: Colors.black54)];
+
+    final business = [
+      if (profile.businessName.isNotEmpty) profile.businessName,
+      if (profile.phone.isNotEmpty) profile.phone,
+    ].join('  ·  ');
+    final dateText = style.showDate
+        ? d('${date.day.toString().padLeft(2, '0')}/'
+            '${date.month.toString().padLeft(2, '0')}/${date.year}')
+        : null;
+    final hasStrip =
+        business.isNotEmpty || dateText != null || style.showFooter;
+
+    return Container(
+      width: quoteWidth,
+      height: quoteWidth * 4 / 3,
+      decoration: BoxDecoration(borderRadius: BorderRadius.circular(18)),
+      clipBehavior: Clip.antiAlias,
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          // Shown when there is no photo, while it loads, or if it fails.
+          DecoratedBox(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  Color.lerp(accent, Colors.white, 0.15)!,
+                  Color.lerp(accent, Colors.black, 0.5)!,
+                ],
+              ),
+            ),
+          ),
+          if (photo != null)
+            Image(
+              image: photo,
+              fit: BoxFit.cover,
+              gaplessPlayback: true,
+              errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+            ),
+          Positioned(
+            top: 14,
+            right: 14,
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 250),
+              child: Container(
+                padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
+                decoration: BoxDecoration(
+                  color: Colors.black.withValues(alpha: 0.58),
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(color: quoteGold.withValues(alpha: 0.6)),
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Text(
+                      'વેપારી: $clientName',
+                      textAlign: TextAlign.right,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                          fontSize: 12.5,
+                          color: Colors.white.withValues(alpha: 0.85)),
+                    ),
+                    if (costing.designNo != null)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 2),
+                        child: Text(
+                          d('ડિઝાઇન #${costing.designNo}'),
+                          style: const TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w700,
+                              color: quoteGold),
+                        ),
+                      ),
+                    const SizedBox(height: 6),
+                    Text(
+                      costing.sariName,
+                      textAlign: TextAlign.right,
+                      maxLines: 3,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                          fontSize: 22,
+                          height: 1.15,
+                          fontWeight: FontWeight.w800,
+                          color: Colors.white),
+                    ),
+                    if (costing.description.isNotEmpty)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 4),
+                        child: Text(
+                          costing.description,
+                          textAlign: TextAlign.right,
+                          maxLines: 3,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                              fontSize: 12.5,
+                              color: Colors.white.withValues(alpha: 0.85)),
+                        ),
+                      ),
+                    const SizedBox(height: 10),
+                    Text(
+                      Labels.finalPrice.gu,
+                      style: TextStyle(
+                          fontSize: 11.5,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white.withValues(alpha: 0.75)),
+                    ),
+                    FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Text(
+                        price,
+                        style: const TextStyle(
+                          fontSize: 28,
+                          fontWeight: FontWeight.w900,
+                          color: quoteGold,
+                          fontFeatures: [FontFeature.tabularFigures()],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          if (hasStrip)
+            Positioned(
+              left: 0,
+              right: 0,
+              bottom: 0,
+              child: Container(
+                padding: const EdgeInsets.fromLTRB(16, 30, 16, 10),
+                decoration: const BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [Colors.transparent, Color(0xB3000000)],
+                  ),
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            business,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w700,
+                                color: Colors.white,
+                                shadows: shadow),
+                          ),
+                        ),
+                        if (dateText != null)
+                          Text(
+                            dateText,
+                            style: TextStyle(
+                                fontSize: 12,
+                                color: Colors.white.withValues(alpha: 0.85),
+                                shadows: shadow),
+                          ),
+                      ],
+                    ),
+                    if (style.showFooter)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 6),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const BrandMark(size: 14),
+                            const SizedBox(width: 5),
+                            Text(
+                              'Made with કોસ્ટિંગ માસ્ટર · Play Store',
+                              style: TextStyle(
+                                  fontSize: 10.5,
+                                  color: Colors.white.withValues(alpha: 0.75),
+                                  shadows: shadow),
+                            ),
+                          ],
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            ),
+        ],
       ),
     );
   }

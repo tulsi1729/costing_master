@@ -28,29 +28,8 @@ class QuoteDesignScreen extends ConsumerWidget {
           padding: const EdgeInsets.fromLTRB(16, 4, 16, 32),
           children: [
             const SectionTitle('લાઇવ પ્રિવ્યૂ', 'Live preview of your quote'),
-            ClipRRect(
-              borderRadius: BorderRadius.circular(18),
-              child: SizedBox(
-                height: 300,
-                child: FittedBox(
-                  fit: BoxFit.fitWidth,
-                  alignment: Alignment.topCenter,
-                  child: AnimatedSwitcher(
-                    duration: Motion.of(context, Motion.medium),
-                    child: QuoteCard(
-                      key: ValueKey(style),
-                      costing: _sampleCosting,
-                      clientName: 'શ્રી ટેક્સટાઇલ્સ',
-                      profile: settings.profile,
-                      style: style,
-                      mode: QuoteMode.customer,
-                      date: DateTime.now(),
-                    ),
-                  ),
-                ),
-              ),
-            ),
-            const SectionTitle('ટેમ્પ્લેટ', 'Template'),
+            _Preview(settings: settings),
+            const SectionTitle('ટેમ્પ્લેટ', 'Template (મારા માટે)'),
             SegmentedButton<QuoteTemplate>(
               showSelectedIcon: false,
               segments: const [
@@ -90,7 +69,7 @@ class QuoteDesignScreen extends ConsumerWidget {
                         (v) => setStyle(style.copyWith(showPhoto: v))),
                     SettingsToggle(
                         'દરેક વસ્તુનો ભાવ',
-                        'Show item-wise rows',
+                        'Item-wise rows (મારા માટે)',
                         style.showItems,
                         (v) => setStyle(style.copyWith(showItems: v))),
                     SettingsToggle('તારીખ', 'Show date', style.showDate,
@@ -116,12 +95,69 @@ class QuoteDesignScreen extends ConsumerWidget {
   }
 }
 
+/// Live preview of either quote, so settings that only affect one of them
+/// can still be seen.
+class _Preview extends StatefulWidget {
+  final AppSettings settings;
+
+  const _Preview({required this.settings});
+
+  @override
+  State<_Preview> createState() => _PreviewState();
+}
+
+class _PreviewState extends State<_Preview> {
+  QuoteMode _mode = QuoteMode.customer;
+
+  @override
+  Widget build(BuildContext context) {
+    final style = widget.settings.quoteStyle;
+    return Column(
+      children: [
+        SegmentedButton<QuoteMode>(
+          segments: const [
+            ButtonSegment(
+                value: QuoteMode.customer, label: Text('વેપારી માટે')),
+            ButtonSegment(value: QuoteMode.internal, label: Text('મારા માટે')),
+          ],
+          selected: {_mode},
+          onSelectionChanged: (s) => setState(() => _mode = s.first),
+        ),
+        const SizedBox(height: 10),
+        ClipRRect(
+          borderRadius: BorderRadius.circular(18),
+          child: SizedBox(
+            height: 300,
+            child: FittedBox(
+              fit: BoxFit.fitWidth,
+              alignment: Alignment.topCenter,
+              child: AnimatedSwitcher(
+                duration: Motion.of(context, Motion.medium),
+                child: QuoteCard(
+                  key: ValueKey((style, _mode)),
+                  costing: _sampleCosting,
+                  clientName: 'શ્રી ટેક્સટાઇલ્સ',
+                  profile: widget.settings.profile,
+                  style: style,
+                  mode: _mode,
+                  date: DateTime.now(),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
 final _sampleCosting = Costing(
   guid: 'sample',
   createdBy: '',
   clientGuid: '',
   designNo: 108,
   sariName: 'રાની પટોળા',
+  description: 'હાથ ભરતકામ, જરકન બોર્ડર',
   imageUrl: '',
   sheetBharvana: 60,
   lessFiting: 25,
